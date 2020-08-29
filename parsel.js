@@ -194,7 +194,7 @@ function nestTokens(tokens) {
 			let left = tokens.slice(0, i);
 			let right = tokens.slice(i + 1);
 
-			if (Math.min(left.length, right.length) === 0) {
+			if (left.length === 0 || right.length === 0) {
 				throw new Error(`Combinator ${token.combinator} used in selector ${left.length === 0? "start" : "end"}`);
 			}
 

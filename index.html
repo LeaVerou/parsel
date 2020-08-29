@@ -9,12 +9,12 @@
 
 <label>
 	Selector:
-	<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2)::before">
+	<!-- <input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:has(#foo))::before"> -->
+	<input type="text" id="selectorText" value="div:hello(2):not(:has(#foo))::before">
 </label>
 
 <pre id="tokens"></pre>
-<!-- <pre id="tree"></pre>
-<pre>{
+<pre id="tree">{
 	"type": "complex",
 	"combinator": " ",
 	"left": {
@@ -73,20 +73,21 @@
 			}
 		]
 	}
-}</pre> -->
+}</pre>
 
 <script type="module">
-	import {tokenize} from "./parsel2.js";
+	import {tokenizeSelector as tokenize, parseSelector} from "./parsel2.js";
 
 	(selectorText.oninput = e => {
 		tokens.textContent = JSON.stringify(tokenize(selectorText.value), null, "\t");
-		// try {
-		// 	tree.textContent = JSON.stringify(parseSelector(selectorText.value), null, "\t");
-		// }
-		// catch (e) {
-		// 	tree.classList.add("error");
-		// 	tree.textContent = e;
-		// }
+		try {
+			tree.textContent = JSON.stringify(parseSelector(selectorText.value), null, "\t");
+			tree.classList.remove("error");
+		}
+		catch (e) {
+			tree.classList.add("error");
+			tree.textContent = e;
+		}
 
 	})();
 </script>
