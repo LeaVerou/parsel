@@ -1,5 +1,5 @@
 const TOKENS = {
-	attribute: /\[\s*(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<i>i)?\s*)?\]/gu,
+	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<i>i)?\s*)?\]/gu,
 	id: /#(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
 	class: /\.(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
@@ -46,6 +46,10 @@ function gobbleParens(text, i) {
 }
 
 export function tokenize(text, grammar) {
+	if (!text) {
+		return [];
+	}
+	
 	var strarr = [text];
 
 	tokenloop: for (var token in grammar) {

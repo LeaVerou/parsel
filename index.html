@@ -9,71 +9,77 @@
 
 <label>
 	Selector:
-	<!-- <input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:has(#foo))::before"> -->
-	<input type="text" id="selectorText" value="div:hello(2):not(:has(#foo))::before">
+	<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:has(#foo))::before">
 </label>
 
-<pre id="tokens"></pre>
-<pre id="tree">{
-	"type": "complex",
-	"combinator": " ",
-	"left": {
+<article>
+	<h2>Tokens</h2>
+	<pre id="tokens"></pre>
+</article>
+<article>
+	<h2>AST</h2>
+	<pre id="tree">{
 		"type": "complex",
-		"combinator": "+",
+		"combinator": " ",
 		"left": {
 			"type": "complex",
-			"combinator": ">",
+			"combinator": "+",
 			"left": {
-				"type": "id",
-				"name": "foo"
+				"type": "complex",
+				"combinator": ">",
+				"left": {
+					"type": "id",
+					"name": "foo"
+				},
+				"right": {
+					"type": "class",
+					"class": "bar"
+				}
 			},
 			"right": {
-				"type": "class",
-				"class": "bar"
+				type: "compound",
+				list: [
+					{
+						"type": "type",
+						"tag": "div"
+					},
+					{
+						"type": "class",
+						"name": "k1"
+					},
+					{
+						type: "class",
+						"name": "k2"
+					}
+				]
 			}
 		},
 		"right": {
-			type: "compound",
-			list: [
+			"type": "compound",
+			"combinator": " ",
+			"list": [
 				{
-					"type": "type",
-					"tag": "div"
+					type: "attribute",
+					operator: "=",
+					name: "id",
+					value: "baz"
 				},
 				{
-					"type": "class",
-					"name": "k1"
+					type: "pseudo-class",
+					name: "hello",
+					arguments: [
+						"2"
+					]
 				},
 				{
-					type: "class",
-					"name": "k2"
+					type: "pseudo-element",
+					name: "before"
 				}
 			]
 		}
-	},
-	"right": {
-		"type": "compound",
-		"combinator": " ",
-		"list": [
-			{
-				type: "attribute",
-				operator: "=",
-				name: "id",
-				value: "baz"
-			},
-			{
-				type: "pseudo-class",
-				name: "hello",
-				arguments: [
-					"2"
-				]
-			},
-			{
-				type: "pseudo-element",
-				name: "before"
-			}
-		]
-	}
-}</pre>
+	}</pre>
+</article>
+
 
 <script type="module">
 	import {tokenizeSelector as tokenize, parseSelector} from "./parsel2.js";
