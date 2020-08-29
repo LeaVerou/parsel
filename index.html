@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Parsel: A tiny, permissive CSS selector parser</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<label>
+	Selector:
+	<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2)::before">
+</label>
+
+<pre id="tokens"></pre>
+<!-- <pre id="tree"></pre>
+<pre>{
+	"type": "complex",
+	"combinator": " ",
+	"left": {
+		"type": "complex",
+		"combinator": "+",
+		"left": {
+			"type": "complex",
+			"combinator": ">",
+			"left": {
+				"type": "id",
+				"name": "foo"
+			},
+			"right": {
+				"type": "class",
+				"class": "bar"
+			}
+		},
+		"right": {
+			type: "compound",
+			list: [
+				{
+					"type": "type",
+					"tag": "div"
+				},
+				{
+					"type": "class",
+					"name": "k1"
+				},
+				{
+					type: "class",
+					"name": "k2"
+				}
+			]
+		}
+	},
+	"right": {
+		"type": "compound",
+		"combinator": " ",
+		"list": [
+			{
+				type: "attribute",
+				operator: "=",
+				name: "id",
+				value: "baz"
+			},
+			{
+				type: "pseudo-class",
+				name: "hello",
+				arguments: [
+					"2"
+				]
+			},
+			{
+				type: "pseudo-element",
+				name: "before"
+			}
+		]
+	}
+}</pre> -->
+
+<script type="module">
+	import {tokenize} from "./parsel2.js";
+
+	(selectorText.oninput = e => {
+		tokens.textContent = JSON.stringify(tokenize(selectorText.value), null, "\t");
+		// try {
+		// 	tree.textContent = JSON.stringify(parseSelector(selectorText.value), null, "\t");
+		// }
+		// catch (e) {
+		// 	tree.classList.add("error");
+		// 	tree.textContent = e;
+		// }
+
+	})();
+</script>
+</body>
+</html>
