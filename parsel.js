@@ -1,188 +1,163 @@
-const COMBINATORS = [">", "+", "~"];
-const PSEUDOS_WITH_SELECTOR_ARG = ["not", "is", "where", "matches"];
-const SPECIAL = [...COMBINATORS, ..."#.[]=^$*:|()"];
-// https://drafts.csswg.org/css-syntax-3/#ident-token-diagram
-const IDENT_CHAR = /^[-\w\u{0080}-\u{FFFF}]+$/ui;
+const TOKENS = {
+	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<i>i)?\s*)?\]/gu,
+	id: /#(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
+	class: /\.(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
+	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
+	comma: /\s*,\s*/g,
+	"pseudo-element": /::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
+	"pseudo-class": /:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
+	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
+};
 
-/*
-TODO:
-- attr selectors
-- type selectors
-- selector lists
-- args
-- consolidate logic, e.g. escapes should only be implemented in one place
-*/
+const TOKENS_WITH_PARENS = new Set(["pseudo-class", "pseudo-element"]);
+const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
+const TRIM_TOKENS = new Set(["combinator", "comma"]);
+const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any"]);
 
-export function tokenize(selector) {
-	selector = selector.trim();
-	let str = "";
-	let stack = [];
-	let ret = [];
-	let i = 0;
-	let escape = false;
+const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
+TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
+TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu")
 
-	function gobble({test, until, escapes = true}) {
-		let str = "";
-		let char = selector[i];
+function gobbleParens(text, i) {
+	let str = "", stack = [];
 
-		while (i < selector.length) {
-			let doBreak;
+	for (; i < text.length; i++) {
+		let char = text[i];
 
-			if (test && !(test.test? test.test(char) : char === test)) {
-				doBreak = true;
-			}
-			else if (until && (until.test? until.test(char) : char === until)) {
-				doBreak = true;
-			}
-
-			if (doBreak && (!escapes || selector[i - 1] !== "\\")) {
-				break;
-			}
-
-			str += char;
-			char = selector[++i];
+		if (char === "(") {
+			stack.push(char);
 		}
-
-		return str;
-	}
-
-	function gobbleIdent() {
-		return gobble({test: IDENT_CHAR, escapes: false});
-	}
-
-	function gobbleParens() {
-		let str = "";
-		let stack = [];
-		let char = selector[i];
-
-		for (; i < selector.length; i++) {
-			if (char === "(" && selector[i - 1] !== "\\") {
-				stack.push(char);
-			}
-			else if (char === ")" && selector[i - 1] !== "\\") {
-				if (stack.length > 0) {
-					stack.pop();
-				}
-				else {
-					throw new Error("Closing paren without opening paren at " + i);
-				}
-
-				if (stack.length === 0) {
-					return str.slice(1); // remove "(" at start
-				}
-			}
-
-			if (char === "'" || char === '"') {
-				str += gobbleString(false);
+		else if (char === ")") {
+			if (stack.length > 0) {
+				stack.pop();
 			}
 			else {
-				str += char;
+				throw new Error("Closing paren without opening paren at " + i);
 			}
 		}
 
-		return str;
-	}
+		str += char;
 
-	function gobbleSpaces() {
-		gobble({test: /\s/});
-	}
-
-	// Read a (potentially unquoted) string
-	function gobbleString(quoted) {
-		let char = selector[i];
-
-		if (!quoted && (char !== '"' && char !== "'")) {
-			// Unquoted string
-			return gobbleIdent();
-		}
-
-		return gobble({until: char});
-	}
-
-	while (i < selector.length) {
-		let char = selector[i];
-
-		if (char === "\\") {
-			// Next char is literal
-			i++;
-			str += selector[i];
-		}
-		else if (char === "#") {
-			i++;
-			ret.push({
-				type: "id",
-				name: gobbleIdent()
-			});
-		}
-		else if (char === ".") {
-			i++;
-			ret.push({
-				type: "class",
-				name: gobbleIdent()
-			});
-		}
-		else if (char === "[") {
-			// TODO handle spaces between parts
-			i++;
-			let o = {
-				type: "attribute",
-				name: gobbleIdent(),
-				operator: gobble({until: "="}) + "=",
-				value: gobbleString()
-			};
-			gobbleSpaces();
-			if (selector[i] === "i") {
-				// https://www.w3.org/TR/selectors/#attribute-case
-				o.i = true;
-			}
-			ret.push(o);
-			gobbleSpaces();
-			i++; // advance past ]
-		}
-		else if (char === ":") {
-			let o = {type: "pseudo-class"};
-
-			if (selector[i + 1] === ":") {
-				o.type = "pseudo-element";
-				i++;
-			}
-
-			i++;
-
-			o.name = gobbleIdent();
-
-			if (selector[i + 1] === "(") {
-				o.argument = gobbleParens();
-			}
-
-			ret.push(o);
-		}
-		else if (/\s/.test(char) || COMBINATORS.includes(char)) {
-			gobbleSpaces();
-			char = selector[i];
-
-			if (COMBINATORS.includes(char)) {
-				ret.push({
-					type: "combinator",
-					combinator: char
-				});
-				i++;
-				gobbleSpaces();
-			}
-			else {
-				ret.push({
-					type: "combinator",
-					combinator: " "
-				});
-			}
-		}
-		else {
-			str += char;
-			i++;
+		if (stack.length === 0) {
+			return str;
 		}
 	}
 
-	return ret;
+	throw new Error("Opening paren without closing paren");
+}
+
+export function tokenizeBy (text, grammar) {
+	if (!text) {
+		return [];
+	}
+
+	var strarr = [text];
+
+	tokenloop: for (var token in grammar) {
+		let pattern = grammar[token];
+
+		for (var i=0; i < strarr.length; i++) { // Don’t cache length as it changes during the loop
+			var str = strarr[i];
+
+			if (typeof str === "string") {
+				pattern.lastIndex = 0;
+
+				var match = pattern.exec(str);
+
+				if (match) {
+					let from = match.index - 1;
+					let args = [];
+					let content = match[0];
+
+					let before = str.slice(0, from + 1);
+					if (before) {
+						args.push(before);
+					}
+
+					args.push({
+						type: token,
+						content,
+						...match.groups
+					});
+
+					let after = str.slice(from + content.length + 1);
+					if (after) {
+						args.push(after);
+					}
+
+					strarr.splice(i, 1, ...args);
+				}
+
+			}
+		}
+	}
+
+	let offset = 0;
+	for (let i=0; i<strarr.length; i++) {
+		let token = strarr[i];
+		let length = token.length || token.content.length;
+
+		if (typeof token === "object") {
+			token.pos = [offset, offset + length];
+
+			if (TRIM_TOKENS.has(token.type)) {
+				token.content = token.content.trim() || " ";
+			}
+		}
+
+		offset += length;
+	}
+
+	return strarr;
+}
+
+export function tokenize (selector) {
+	selector = selector.trim(); // prevent leading/trailing whitespace be interpreted as combinators
+
+	// Replace strings with whitespace strings (to preserve offsets)
+	let strings = [];
+	// FIXME Does not account for escaped backslashes before a quote
+	selector = selector.replace(/(['"])(\\\1|.)+?\1/g, (str, quote, content, start) => {
+		strings.push({str, start});
+		return quote + "§".repeat(content.length) + quote;
+	});
+
+	// Now that strings are out of the way, extract parens and replace them with parens with whitespace (to preserve offsets)
+	let parens = [], offset = 0, start;
+	while ((start = selector.indexOf("(", offset)) > -1) {
+		let str = gobbleParens(selector, start);
+		parens.push({str, start});
+		selector = selector.substring(0, start) + "(" + "¶".repeat(str.length - 2) + ")" + selector.substring(start + str.length);
+		offset += start + str.length;
+	}
+
+	// Now we have no nested structures and we can parse with regexes
+	let tokens = tokenizeBy(selector, TOKENS);
+
+	// Now restore parens and strings in reverse order
+	function restoreNested(strings, regex, types) {
+		for (let str of strings) {
+			for (let token of tokens) {
+				if (types.has(token.type) && token.pos[0] < str.start && str.start < token.pos[1]) {
+					let content = token.content;
+					token.content = token.content.replace(regex, str.str);
+
+					if (token.content !== content) { // actually changed?
+						// Re-evaluate groups
+						TOKENS_FOR_RESTORE[token.type].lastIndex = 0;
+						let match = TOKENS_FOR_RESTORE[token.type].exec(token.content);
+						let groups = match.groups;
+						Object.assign(token, groups);
+					}
+				}
+			}
+		}
+	}
+
+	restoreNested(parens, /\(¶+\)/, TOKENS_WITH_PARENS);
+	restoreNested(strings, /(['"])§+?\1/, TOKENS_WITH_STRINGS);
+
+	return tokens;
 }
 
 // Convert a flat list of tokens into a tree of complex & compound selectors
@@ -195,12 +170,12 @@ function nestTokens(tokens) {
 			let right = tokens.slice(i + 1);
 
 			if (left.length === 0 || right.length === 0) {
-				throw new Error(`Combinator ${token.combinator} used in selector ${left.length === 0? "start" : "end"}`);
+				throw new Error(`Combinator ${token.content} used in selector ${left.length === 0? "start" : "end"}`);
 			}
 
 			return {
 				type: "complex",
-				combinator: token.combinator,
+				combinator: token.content,
 				left: nestTokens(left),
 				right: nestTokens(right)
 			};
@@ -214,8 +189,35 @@ function nestTokens(tokens) {
 	};
 }
 
-export function parseSelector(selector) {
-	let tokens = tokenize(selector);
+// Traverse an AST (or part thereof), in depth-first order
+export function traverse(node, callback) {
+	if (node.type === "complex") {
+		traverse(node.left, callback);
+		traverse(node.right, callback);
+	}
+	else if (node.type === "compound") {
+		for (let n of node.list) {
+			traverse(n, callback);
+		}
+	}
+	else if (node.subtree) {
+		traverse(node.subtree, callback);
+	}
 
-	return nestTokens(tokens);
+	callback(node);
+}
+
+export function parse(selector, {recursive = true} = {}) {
+	let tokens = tokenize(selector);
+	let ast = nestTokens(tokens);
+
+	if (recursive) {
+		traverse(ast, node => {
+			if (node.type === "pseudo-class" && node.argument && RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
+				node.subtree = parse(node.argument);
+			}
+		});
+	}
+
+	return ast;
 }

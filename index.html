@@ -3,99 +3,96 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Parsel: A tiny, permissive CSS selector parser</title>
+	<link rel="shortcut icon" href="favicon.svg">
 	<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<label>
-	Selector:
-	<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:has(#foo))::before">
-</label>
+<header>
+	<h1>parsel</h1>
+	<h2>A tiny, permissive CSS selector parser</h2>
 
-<article>
-	<h2>Tokens</h2>
-	<pre id="tokens"></pre>
-</article>
-<article>
-	<h2>AST</h2>
-	<pre id="tree">{
-		"type": "complex",
-		"combinator": " ",
-		"left": {
-			"type": "complex",
-			"combinator": "+",
-			"left": {
-				"type": "complex",
-				"combinator": ">",
-				"left": {
-					"type": "id",
-					"name": "foo"
-				},
-				"right": {
-					"type": "class",
-					"class": "bar"
-				}
-			},
-			"right": {
-				type: "compound",
-				list: [
-					{
-						"type": "type",
-						"tag": "div"
-					},
-					{
-						"type": "class",
-						"name": "k1"
-					},
-					{
-						type: "class",
-						"name": "k2"
-					}
-				]
-			}
-		},
-		"right": {
-			"type": "compound",
-			"combinator": " ",
-			"list": [
-				{
-					type: "attribute",
-					operator: "=",
-					name: "id",
-					value: "baz"
-				},
-				{
-					type: "pseudo-class",
-					name: "hello",
-					arguments: [
-						"2"
-					]
-				},
-				{
-					type: "pseudo-element",
-					name: "before"
-				}
-			]
-		}
-	}</pre>
-</article>
+	<ul>
+		<li>Parse & traverse selectors & calculate specificity</li>
+		<li>Calculate specificity</li>
+		<li>Only 2KB and no dependencies</li>
+		<li>Supports the entire <a href="https://w3.org/TR/selectors-4">Selectors 4</a> syntax</li>
+		<li>Permissive enough to work with a lot of potential future syntax</li>
+	</ul>
+</header>
 
+<section id="tryout">
+	<header>
+		<label>
+			Selector:
+			<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:where(#foo))::before">
+		</label>
+		<label>
+			<input type="checkbox" id="recursive" checked>
+			Recursive (parse arguments of <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc)
+		</label>
+	</header>
+	<article>
+		<h2>Tokens</h2>
+		<pre><code>parsel.tokenize(selector);</code></pre>
+		<pre id="tokens"></pre>
+	</article>
+	<article>
+		<h2>AST</h2>
+		<pre><code>parsel.parse(selector);</code></pre>
+		<pre id="tree"></pre>
+	</article>
+</section>
+
+<section>
+	<h2>Usage</h2>
+
+	<p>Parsel is an ES module. You import it like so:</p>
+
+	<pre><code>import * as parsel from "https://leaverou.github.io/parsel.js"</code></pre>
+
+	<p>Note that to use that your script needs to use <code>type="module"</code> or be imported from a script that does.
+		If you can't use ES modules, here is a workaround to convert Parsel to a global:
+	</p>
+
+	<pre><code>
+		&lt;script type="module">
+			import * as parsel;
+			window.parsel = parsel;
+		&lt;/script>
+	</code></pre>
+
+	<p>After that, you can use <code>parsel</code> as a global, assuming your code runs after the <code>DOMContentLoaded</code> event.
+</section>
+
+<section>
+	<h2>API</h2>
+
+	<p>Get list of tokens:</p>
+
+	<pre><code>parsel.tokenize(selector)</code></pre>
+
+	<p>Get AST:</p>
+
+	<pre><code>parsel.parse(selector)</code></pre>
+	<pre><code>parsel.parse(selector, {recursive: false})</code></pre>
+</section>
 
 <script type="module">
-	import {tokenizeSelector as tokenize, parseSelector} from "./parsel2.js";
+import * as parsel from "./parsel.js";
 
-	(selectorText.oninput = e => {
-		tokens.textContent = JSON.stringify(tokenize(selectorText.value), null, "\t");
-		try {
-			tree.textContent = JSON.stringify(parseSelector(selectorText.value), null, "\t");
-			tree.classList.remove("error");
-		}
-		catch (e) {
-			tree.classList.add("error");
-			tree.textContent = e;
-		}
+(tryout.oninput = e => {
+	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
 
-	})();
+	try {
+		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
+		tree.classList.remove("error");
+	}
+	catch (e) {
+		tree.classList.add("error");
+		tree.textContent = e;
+	}
+})();
 </script>
 </body>
 </html>

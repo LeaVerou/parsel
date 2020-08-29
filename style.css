@@ -1,23 +1,37 @@
 body {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
+	font: 300 100%/1.5 'Helvetica Neue', Segoe UI, sans-serif;
+}
+
+h1, h2, h3 {
+	margin: 0;
+}
+
+body > header {
 
 }
 
-input {
+#selectorText {
 	display: block;
 	font-size: 120%;
 	width: 100%;
 }
 
-label {
-	grid-column-end: span 2;
-	display: block;
+#tryout {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
 }
 
-pre {
-	grid-row: 2;
-}
+	#tryout header {
+		grid-column-end: span 2;
+		position: sticky;
+		top: 0;
+		display: block;
+		background: white;
+	}
+
+	#tryout pre {
+		grid-row: 2;
+	}
 
 .error {
 	color: #c00;
