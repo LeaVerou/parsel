@@ -297,7 +297,7 @@ export function specificity(selector, {format = "array"} = {}) {
 		else if (node.type === "class" || node.type === "attribute") {
 			ret[1]++;
 		}
-		else if (node.type === "type" && node.name !== "*") {
+		else if (node.type === "type" && node.content !== "*") {
 			ret[2]++;
 		}
 		else if (node.type === "pseudo-class" && node.name !== "where") {
