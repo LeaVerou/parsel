@@ -13,7 +13,7 @@
 	<h2>A tiny, permissive CSS selector parser</h2>
 
 	<ul>
-		<li>Parse & traverse selectors & calculate specificity</li>
+		<li>Parse & traverse CSS selectors</li>
 		<li>Calculate specificity</li>
 		<li>Only 2KB and no dependencies</li>
 		<li>Supports the entire <a href="https://w3.org/TR/selectors-4">Selectors 4</a> syntax</li>
@@ -57,7 +57,7 @@
 
 	<pre><code>
 		&lt;script type="module">
-			import * as parsel;
+			import * as parsel from "https://leaverou.github.io/parsel.js";
 			window.parsel = parsel;
 		&lt;/script>
 	</code></pre>
@@ -68,14 +68,24 @@
 <section>
 	<h2>API</h2>
 
-	<p>Get list of tokens:</p>
+	<p>Get list of tokens as a flat array:</p>
 
 	<pre><code>parsel.tokenize(selector)</code></pre>
 
 	<p>Get AST:</p>
 
 	<pre><code>parsel.parse(selector)</code></pre>
-	<pre><code>parsel.parse(selector, {recursive: false})</code></pre>
+
+	<p>You can also provide options:</p>
+
+	<pre><code>parsel.parse(selector, {recursive: false, list: false})</code></pre>
+
+	<p>The <code>recursive</code> option parses the arguments of pseudo-classes whose argument is a selector like <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc into a <code>subtree</code> property.
+	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework)</p>
+
+	<p>Traverse all tokens:</p>
+
+	<pre><code>parsel.walk(selector, callback)</code></pre>
 </section>
 
 <script type="module">
@@ -90,7 +100,7 @@ import * as parsel from "./parsel.js";
 	}
 	catch (e) {
 		tree.classList.add("error");
-		tree.textContent = e;
+		tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
 	}
 })();
 </script>

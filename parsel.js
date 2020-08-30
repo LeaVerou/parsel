@@ -2,8 +2,8 @@ const TOKENS = {
 	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<i>i)?\s*)?\]/gu,
 	id: /#(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
 	class: /\.(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
+	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
-	comma: /\s*,\s*/g,
 	"pseudo-element": /::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
 	"pseudo-class": /:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
 	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
@@ -161,7 +161,33 @@ export function tokenize (selector) {
 }
 
 // Convert a flat list of tokens into a tree of complex & compound selectors
-function nestTokens(tokens) {
+export function nestTokens(tokens, {list = true} = {}) {
+	if (list && tokens.find(t => t.type === "comma")) {
+		let list = [], start = 0;
+
+		for (let i=0; i<tokens.length; i++) {
+			let token = tokens[i];
+
+			if (token.type === "comma") {
+				if (start === i) {
+					throw new Error("Incorrect comma at " + i);
+				}
+
+				list.push(nestTokens(tokens.slice(start, i), {list: false}));
+				start = i;
+			}
+		}
+
+		if (start === tokens.length - 1) {
+			throw new Error("Trailing comma");
+		}
+		else {
+			list.push(nestTokens(tokens.slice(start + 1), {list: false}));
+		}
+
+		return { type: "list", list };
+	}
+
 	for (let i=tokens.length - 1; i>=0; i--) {
 		let token = tokens[i];
 
@@ -190,31 +216,37 @@ function nestTokens(tokens) {
 }
 
 // Traverse an AST (or part thereof), in depth-first order
-export function traverse(node, callback) {
+export function walk(node, callback) {
 	if (node.type === "complex") {
-		traverse(node.left, callback);
-		traverse(node.right, callback);
+		walk(node.left, callback);
+		walk(node.right, callback);
 	}
 	else if (node.type === "compound") {
 		for (let n of node.list) {
-			traverse(n, callback);
+			walk(n, callback);
 		}
 	}
 	else if (node.subtree) {
-		traverse(node.subtree, callback);
+		walk(node.subtree, callback);
 	}
 
 	callback(node);
 }
 
-export function parse(selector, {recursive = true} = {}) {
+/**
+ * Parse a CSS selector
+ * @param selector {String} The selector to parse
+ * @param options.recursive {Boolean} Whether to parse the arguments of pseudo-classes like :is(), :has() etc. Defaults to true.
+ * @param options.list {Boolean} Whether this can be a selector list (A, B, C etc). Defaults to true.
+ */
+export function parse(selector, {recursive = true, list = true} = {}) {
 	let tokens = tokenize(selector);
-	let ast = nestTokens(tokens);
+	let ast = nestTokens(tokens, {list});
 
 	if (recursive) {
-		traverse(ast, node => {
+		walk(ast, node => {
 			if (node.type === "pseudo-class" && node.argument && RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
-				node.subtree = parse(node.argument);
+				node.subtree = parse(node.argument, {recursive: true, list: true});
 			}
 		});
 	}
