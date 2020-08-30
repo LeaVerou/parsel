@@ -4,9 +4,10 @@
 	<meta charset="UTF-8">
 	<title>Parsel: A tiny, permissive CSS selector parser</title>
 	<link rel="shortcut icon" href="favicon.svg">
+	<link rel="stylesheet" href="prism.css">
 	<link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="language-javascript">
 
 <header>
 	<h1>parsel</h1>
@@ -36,12 +37,12 @@
 	<article>
 		<h2>Tokens</h2>
 		<pre><code>parsel.tokenize(selector);</code></pre>
-		<pre id="tokens"></pre>
+		<pre><code id="tokens" class="language-json"></code></pre>
 	</article>
 	<article>
 		<h2>AST</h2>
 		<pre><code>parsel.parse(selector);</code></pre>
-		<pre id="tree"></pre>
+		<pre><code id="tree" class="language-json"></code></pre>
 	</article>
 </section>
 
@@ -56,7 +57,7 @@
 		If you can't use ES modules, here is a workaround to convert Parsel to a global:
 	</p>
 
-	<pre><code>
+	<pre class="language-markup"><code>
 		&lt;script type="module">
 			import * as parsel from "https://leaverou.github.io/parsel.js";
 			window.parsel = parsel;
@@ -101,12 +102,14 @@ self.parsel = parsel; // so that people can experiment in the console
 
 (tryout.oninput = e => {
 	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
+	Prism.highlightElement(tokens);
 
 	try {
 
 		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
 		tree.classList.remove("error");
 		specificity.textContent = parsel.specificity(selectorText.value);
+		Prism.highlightElement(tree);
 	}
 	catch (e) {
 		tree.classList.add("error");
@@ -114,5 +117,6 @@ self.parsel = parsel; // so that people can experiment in the console
 	}
 })();
 </script>
+<script src="prism.js"></script>
 </body>
 </html>
