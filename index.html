@@ -25,12 +25,13 @@
 	<header>
 		<label>
 			Selector:
-			<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:where(#foo))::before">
+			<input type="text" id="selectorText" value="#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:where(#yolo))::before">
 		</label>
 		<label>
 			<input type="checkbox" id="recursive" checked>
 			Recursive (parse arguments of <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc)
 		</label>
+		<div>Specificity: <strong id="specificity"></strong></div>
 	</header>
 	<article>
 		<h2>Tokens</h2>
@@ -63,6 +64,8 @@
 	</code></pre>
 
 	<p>After that, you can use <code>parsel</code> as a global, assuming your code runs after the <code>DOMContentLoaded</code> event.
+		In fact, we are assigning <code>parsel</code> to a global in this very page, so you can open your console and play with it!</p>
+
 </section>
 
 <section>
@@ -83,20 +86,27 @@
 	<p>The <code>recursive</code> option parses the arguments of pseudo-classes whose argument is a selector like <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc into a <code>subtree</code> property.
 	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework)</p>
 
-	<p>Traverse all tokens:</p>
+	<p>Traverse all tokens of a (sub)tree:</p>
 
-	<pre><code>parsel.walk(selector, callback)</code></pre>
+	<pre><code>parsel.walk(node, callback)</code></pre>
+
+	<p>Calculate specificity (returns an array of 3 numbers):</p>
+
+	<pre><code>parsel.specificity(selectorOrNode)</code></pre>
 </section>
 
 <script type="module">
 import * as parsel from "./parsel.js";
+self.parsel = parsel; // so that people can experiment in the console
 
 (tryout.oninput = e => {
 	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
 
 	try {
+
 		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
 		tree.classList.remove("error");
+		specificity.textContent = parsel.specificity(selectorText.value);
 	}
 	catch (e) {
 		tree.classList.add("error");

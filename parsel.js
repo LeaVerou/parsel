@@ -216,7 +216,7 @@ export function nestTokens(tokens, {list = true} = {}) {
 }
 
 // Traverse an AST (or part thereof), in depth-first order
-export function walk(node, callback) {
+export function walk(node, callback, {subtree = false} = {}) {
 	if (node.type === "complex") {
 		walk(node.left, callback);
 		walk(node.right, callback);
@@ -226,7 +226,7 @@ export function walk(node, callback) {
 			walk(n, callback);
 		}
 	}
-	else if (node.subtree) {
+	else if (node.subtree && subtree) {
 		walk(node.subtree, callback);
 	}
 
@@ -252,4 +252,65 @@ export function parse(selector, {recursive = true, list = true} = {}) {
 	}
 
 	return ast;
+}
+
+function specificityToNumber(specificity) {
+	let base = Math.max(...specificity) + 1;
+
+	return specificity[0] * base ** 2 + specificity[1] * base + specificity[0];
+}
+
+function maxIndexOf(arr) {
+	let max = arr[0], ret = 0;
+
+	for (let i=0; i<arr.length; i++) {
+		if (arr[i] > max) {
+			ret = i;
+			max = arr[i];
+		}
+	}
+
+	return arr.length === 0? -1 : ret;
+}
+
+/**
+ * Calculate specificity of a selector.
+ * If the selector is a list, the max specificity is returned.
+ */
+export function specificity(selector, {format = "array"} = {}) {
+	let ast = typeof selector === "object"? selector : parse(selector, {recursive: true, list: false});
+
+	if (ast.type === "list") {
+		// Return max specificity
+		let specificities = ast.list.map(s => specificity(s));
+		let numbers = specificities.map(specificityToNumber);
+		let i = maxIndexOf(numbers);
+		return specificities[i];
+	}
+
+	let ret = [0, 0, 0];
+
+	walk(ast, node => {
+		if (node.type === "id") {
+			ret[0]++;
+		}
+		else if (node.type === "class" || node.type === "attribute") {
+			ret[1]++;
+		}
+		else if (node.type === "type" && node.name !== "*") {
+			ret[2]++;
+		}
+		else if (node.type === "pseudo-class" && node.name !== "where") {
+			if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
+				// Max of argument list
+				let sub = specificity(node.subtree);
+				sub.forEach((s, i) => ret[i] += s);
+			}
+			else {
+				ret[1]++;
+			}
+		}
+	});
+
+	return ret;
 }
