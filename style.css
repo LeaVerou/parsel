@@ -5,9 +5,12 @@
 	--font-heading: 'Cabin Sketch', var(--font-body);
 	--font-mono: Consolas, Monaco, monospace;
 
-	--color-green: hsl(90 40% 70%);
-	--color-pale-blue: hsl(200 40% 96%);
-	--color-dark-blue: hsl(200 40% 40%);
+	--color-green-hs: 90 40%;
+	--color-blue-hs: 200 40%;
+	--color-green: hsl(var(--color-green-hs) 70%);
+	--color-dark-green: hsl(var(--color-green-hs) 35%);
+	--color-pale-blue: hsl(var(--color-blue-hs) 96%);
+	--color-dark-blue: hsl(var(--color-blue-hs) 40%);
 }
 
 body {
@@ -105,8 +108,6 @@ body > footer > * {
 		box-sizing: border-box;
 	}
 
-
-
 	#specificity-display {
 		grid-column: 1 / span 2;
 		display: grid;
@@ -127,7 +128,7 @@ body > footer > * {
 
 		#specificity-display code {
 			background: none;
-			text-shadow: none;
+			text-shadow: 0 0 .1em white;
 			font-size: 75%;
 		}
 
