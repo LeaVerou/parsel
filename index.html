@@ -3,6 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Parsel: A tiny, permissive CSS selector parser</title>
+	<meta name="viewport" content="width=device-width">
 	<link rel="shortcut icon" href="favicon.svg">
 	<link rel="stylesheet" href="prism.css">
 	<link rel="stylesheet" href="style.css">
@@ -52,7 +53,7 @@
 
 	<p>Parsel is an ES module. You import it like so:</p>
 
-	<pre><code>import * as parsel from "https://leaverou.github.io/parsel.js"</code></pre>
+	<pre><code>import * as parsel from "https://leaverou.github.io/parsel/parsel.js"</code></pre>
 
 	<p>Note that to use that your script needs to use <code>type="module"</code> or be imported from a script that does.
 		If you can't use ES modules, here is a workaround to convert Parsel to a global:
@@ -60,7 +61,7 @@
 
 	<pre class="language-markup"><code>
 		&lt;script type="module">
-			import * as parsel from "https://leaverou.github.io/parsel.js";
+			import * as parsel from "https://leaverou.github.io/parsel/parsel.js";
 			window.parsel = parsel;
 		&lt;/script>
 	</code></pre>
