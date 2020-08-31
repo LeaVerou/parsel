@@ -32,16 +32,17 @@
 			<input type="checkbox" id="recursive" checked>
 			Recursive (parse arguments of <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc)
 		</label>
-		<div>Specificity: <strong id="specificity"></strong></div>
 	</header>
+	<div id="specificity-display">
+		Specificity:
+		<code>parsel.specificity(selector);</code>
+		<strong id="specificity"></strong></div>
 	<article>
-		<h2>Tokens</h2>
-		<pre><code>parsel.tokenize(selector);</code></pre>
+		<h2>Tokens <code>parsel.tokenize(selector);</code></h2>
 		<pre><code id="tokens" class="language-json"></code></pre>
 	</article>
 	<article>
-		<h2>AST</h2>
-		<pre><code>parsel.parse(selector);</code></pre>
+		<h2>AST <code>parsel.parse(selector);</code></h2>
 		<pre><code id="tree" class="language-json"></code></pre>
 	</article>
 </section>
@@ -95,6 +96,10 @@
 
 	<pre><code>parsel.specificity(selectorOrNode)</code></pre>
 </section>
+
+<footer>
+	<p>Made with ❤ by <a href="https://lea.verou.me">Lea Verou</a> &bull; <a href="https://github.com/leaverou/parsel">Github</a>
+</footer>
 
 <script type="module">
 import * as parsel from "./parsel.js";
