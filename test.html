@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Parsel Tests</title>
+	<link rel="stylesheet" href="https://test.mavo.io/style.css" />
+	<style>
+		td {
+			white-space: pre;
+			font-family: Consolas, Monaco, monospace;
+		}
+	</style>
+</head>
+<body>
+
+<h1>Parsel Tests</h1>
+
+<section>
+	<h1>Tokens</h1>
+
+	<table class="reftest" data-test="testTokenize" data-columns="3">
+		<tr>
+			<td>#foo</td>
+			<td>[{"type":"id", "content":"#foo", "name":"foo", "pos":[0,4]}]</td>
+		</tr>
+	</table>
+</section>
+
+<section>
+	<h1>AST</h1>
+
+	<table class="reftest" data-test="testAST" data-columns="3">
+		<tr>
+			<td>#foo</td>
+			<td>{"type":"id", "content":"#foo", "name":"foo", "pos":[0,4]}</td>
+		</tr>
+	</table>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/blissfuljs/1.0.4/bliss.min.js"></script>
+<script src="https://test.mavo.io/test.js"></script>
+<script type="module">
+import * as parsel from "./parsel.js";
+
+window.testTokenize = function(test, result, expected) {
+	console.log(arguments)
+	let tokens = parsel.tokenize(test.textContent);
+	let serialized = JSON.stringify(tokens, null, "\t");
+	result.textContent = serialized;
+	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
+}
+
+window.testAST = function(test, result, expected) {
+	console.log(arguments)
+	let ast = parsel.parse(test.textContent);
+	let serialized = JSON.stringify(ast, null, "\t");
+	result.textContent = serialized;
+	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
+}
+</script>
+
+</body>
+</html>
