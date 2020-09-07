@@ -111,7 +111,6 @@ body > footer > * {
 	#specificity-display {
 		grid-column: 1 / span 2;
 		display: grid;
-		grid-template-columns: 1fr auto;
 		margin: .5em 0;
 		padding: 1em;
 		background: var(--color-green);
@@ -120,10 +119,19 @@ body > footer > * {
 	}
 
 		#specificity {
-			grid-column: 2;
-			grid-row: 1 / span 2;
 			font-family: var(--font-body);
 			font-size: 200%;
+		}
+
+		@media (min-width: 600px) {
+			#specificity-display {
+				grid-template-columns: 1fr auto;
+			}
+
+			#specificity {
+				grid-column: 2;
+				grid-row: 1 / span 2;
+			}
 		}
 
 		#specificity-display code {
