@@ -254,8 +254,8 @@ export function parse(selector, {recursive = true, list = true} = {}) {
 	return ast;
 }
 
-function specificityToNumber(specificity) {
-	let base = Math.max(...specificity) + 1;
+export function specificityToNumber(specificity, base) {
+	base = base || Math.max(...specificity) + 1;
 
 	return specificity[0] * base ** 2 + specificity[1] * base + specificity[0];
 }
@@ -278,12 +278,17 @@ function maxIndexOf(arr) {
  * If the selector is a list, the max specificity is returned.
  */
 export function specificity(selector, {format = "array"} = {}) {
-	let ast = typeof selector === "object"? selector : parse(selector, {recursive: true, list: false});
+	let ast = typeof selector === "object"? selector : parse(selector, {recursive: true});
 
 	if (ast.type === "list") {
 		// Return max specificity
-		let specificities = ast.list.map(s => specificity(s));
-		let numbers = specificities.map(specificityToNumber);
+		let base = 10;
+		let specificities = ast.list.map(s => {
+			let sp = specificity(s);
+			base = Math.max(base, ...sp);
+			return sp;
+		});
+		let numbers = specificities.map(s => specificityToNumber(s, base));
 		let i = maxIndexOf(numbers);
 		return specificities[i];
 	}
