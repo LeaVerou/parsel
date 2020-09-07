@@ -18,7 +18,7 @@ const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
 TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
 TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu")
 
-function gobbleParens(text, i) {
+export function gobbleParens(text, i) {
 	let str = "", stack = [];
 
 	for (; i < text.length; i++) {
