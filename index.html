@@ -55,7 +55,7 @@
 
 	<p>Parsel is an ES module. You import it like so:</p>
 
-	<pre><code>import * as parsel from "https://leaverou.github.io/parsel/parsel.js"</code></pre>
+	<pre><code>import * as parsel from "https://projects.verou.me/parsel/parsel.js"</code></pre>
 
 	<p>Note that to use that your script needs to use <code>type="module"</code> or be imported from a script that does.
 		If you can't use ES modules, here is a workaround to convert Parsel to a global:
@@ -63,7 +63,7 @@
 
 	<pre class="language-markup"><code>
 		&lt;script type="module">
-			import * as parsel from "https://leaverou.github.io/parsel/parsel.js";
+			import * as parsel from "https://projects.verou.me/parsel/parsel.js";
 			window.parsel = parsel;
 		&lt;/script>
 	</code></pre>
@@ -95,9 +95,13 @@
 
 	<pre><code>parsel.walk(node, callback)</code></pre>
 
+	<p><code>callback</code> is called with each node as the only argument.</p>
+
 	<p>Calculate specificity (returns an array of 3 numbers):</p>
 
 	<pre><code>parsel.specificity(selectorOrNode)</code></pre>
+
+	<p><strong>Try it out!</strong> In this page, <code>parsel</code> is assigned to a global so you can experiment with the API in the console!</p>
 </section>
 
 <footer>
