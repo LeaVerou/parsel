@@ -117,21 +117,31 @@
 import * as parsel from "./parsel.js";
 self.parsel = parsel; // so that people can experiment in the console
 
+if(location.search.includes('?selector=')) {
+
+	let selector = decodeURIComponent(location.href.split('?selector=')[1])
+	selectorText.value = selector || selectorText.value // set default value if selector is empty
+	
+	history.replaceState(null, '', `?selector=${selector}`)
+}
+
 (tryout.oninput = e => {
-	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
-	Prism.highlightElement(tokens);
+history.replaceState(null, '', `?selector=${selectorText.value}`)
+	
+tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
+Prism.highlightElement(tokens);
 
-	try {
+try {
 
-		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
-		tree.classList.remove("error");
-		specificity.textContent = parsel.specificity(selectorText.value);
-		Prism.highlightElement(tree);
-	}
-	catch (e) {
-		tree.classList.add("error");
-		tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
-	}
+	tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
+	tree.classList.remove("error");
+	specificity.textContent = parsel.specificity(selectorText.value);
+	Prism.highlightElement(tree);
+}
+catch (e) {
+	tree.classList.add("error");
+	tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
+}
 })();
 </script>
 <script src="prism.js"></script>
