@@ -163,26 +163,27 @@ export function tokenize (selector) {
 // Convert a flat list of tokens into a tree of complex & compound selectors
 export function nestTokens(tokens, {list = true} = {}) {
 	if (list && tokens.find(t => t.type === "comma")) {
-		let list = [], start = 0;
+		let list = [], temp = [];
 
 		for (let i=0; i<tokens.length; i++) {
-			let token = tokens[i];
-
-			if (token.type === "comma") {
-				if (start === i) {
+			if (tokens[i].type === "comma") {
+				if (temp.length === 0) {
 					throw new Error("Incorrect comma at " + i);
 				}
 
-				list.push(nestTokens(tokens.slice(start, i), {list: false}));
-				start = i;
+				list.push(nestTokens(temp, {list: false}));
+				temp.length = 0;
+			}
+			else {
+				temp.push(tokens[i]);
 			}
 		}
 
-		if (start === tokens.length - 1) {
+		if (temp.length === 0) {
 			throw new Error("Trailing comma");
 		}
 		else {
-			list.push(nestTokens(tokens.slice(start + 1), {list: false}));
+			list.push(nestTokens(temp, {list: false}));
 		}
 
 		return { type: "list", list };
