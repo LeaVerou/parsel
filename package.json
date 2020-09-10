@@ -1,0 +1,23 @@
+{
+  "name": "parsel",
+  "version": "1.0.0",
+  "description": "A tiny, permissive CSS selector parser",
+  "main": "parsel.js",
+  "scripts": {
+    "test": "open test.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeaVerou/parsel.git"
+  },
+  "keywords": [
+    "CSS",
+    "selectors"
+  ],
+  "author": "Lea Verou",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/LeaVerou/parsel/issues"
+  },
+  "homepage": "https://projects.verou.me/parsel"
+}
