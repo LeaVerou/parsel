@@ -1,5 +1,5 @@
 {
-  "name": "parsel",
+  "name": "parsel-js",
   "version": "1.0.0",
   "description": "A tiny, permissive CSS selector parser",
   "main": "parsel.js",
