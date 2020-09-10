@@ -1,7 +1,7 @@
 const TOKENS = {
 	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<i>i)?\s*)?\]/gu,
-	id: /#(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
-	class: /\.(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu,
+	id: /#(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
+	class: /\.(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
 	"pseudo-element": /::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
