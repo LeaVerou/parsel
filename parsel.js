@@ -132,7 +132,7 @@ export function tokenize (selector) {
 		let str = gobbleParens(selector, start);
 		parens.push({str, start});
 		selector = selector.substring(0, start) + "(" + "¶".repeat(str.length - 2) + ")" + selector.substring(start + str.length);
-		offset += start + str.length;
+		offset = start + str.length;
 	}
 
 	// Now we have no nested structures and we can parse with regexes
