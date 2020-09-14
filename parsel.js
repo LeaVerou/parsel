@@ -112,6 +112,10 @@ export function tokenizeBy (text, grammar) {
 }
 
 export function tokenize (selector) {
+	if (!selector) {
+		return null;
+	}
+
 	selector = selector.trim(); // prevent leading/trailing whitespace be interpreted as combinators
 
 	// Replace strings with whitespace strings (to preserve offsets)
@@ -242,6 +246,11 @@ export function walk(node, callback, {subtree = false} = {}) {
  */
 export function parse(selector, {recursive = true, list = true} = {}) {
 	let tokens = tokenize(selector);
+
+	if (!tokens) {
+		return null;
+	}
+
 	let ast = nestTokens(tokens, {list});
 
 	if (recursive) {
@@ -281,6 +290,10 @@ function maxIndexOf(arr) {
 export function specificity(selector, {format = "array"} = {}) {
 	let ast = typeof selector === "object"? selector : parse(selector, {recursive: true});
 
+	if (!ast) {
+		return null;
+	}
+
 	if (ast.type === "list") {
 		// Return max specificity
 		let base = 10;
@@ -307,7 +320,7 @@ export function specificity(selector, {format = "array"} = {}) {
 			ret[2]++;
 		}
 		else if (node.type === "pseudo-class" && node.name !== "where") {
-			if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
+			if (RECURSIVE_PSEUDO_CLASSES.has(node.name) && node.subtree) {
 				// Max of argument list
 				let sub = specificity(node.subtree);
 				sub.forEach((s, i) => ret[i] += s);
