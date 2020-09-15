@@ -216,7 +216,7 @@ export function nestTokens(tokens, {list = true} = {}) {
 	// If we're here, there are no combinators, so it's just a list
 	return tokens.length === 1? tokens[0] : {
 		type: "compound",
-		list: tokens
+		list: [...tokens] // clone to avoid pointers messing up the AST
 	};
 }
 
