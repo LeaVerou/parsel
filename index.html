@@ -121,7 +121,7 @@ let url = new URL(location);
 const selector = url.searchParams.get("selector");
 
 if (selector) {
-	selectorText.value = selector; // set default value if the selector is empty
+	selectorText.value = selector;
 	url.searchParams.set("selector", selectorText.value);
 }
 
