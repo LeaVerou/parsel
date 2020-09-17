@@ -135,14 +135,14 @@ if (selector) {
 
 	try {
 
-			tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
-			tree.classList.remove("error");
-			specificity.textContent = parsel.specificity(selectorText.value);
-			Prism.highlightElement(tree);
+		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
+		tree.classList.remove("error");
+		specificity.textContent = parsel.specificity(selectorText.value);
+		Prism.highlightElement(tree);
 	}
 	catch (e) {
-			tree.classList.add("error");
-			tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
+		tree.classList.add("error");
+		tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
 	}
 })();
 </script>
