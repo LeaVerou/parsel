@@ -117,30 +117,32 @@
 import * as parsel from "./parsel.js";
 self.parsel = parsel; // so that people can experiment in the console
 
-const url = new URL(location);
-if(url.searchParams.get("selector")) {
-    let selector = url.searchParams.get("selector");
-    selectorText.value = selector || selectorText.value; // set default value if the selector is empty
-    url.searchParams.set("selector", selectorText.value);
+let url = new URL(location);
+const selector = url.searchParams.get("selector");
+
+if (selector) {
+	selectorText.value = selector; // set default value if the selector is empty
+	url.searchParams.set("selector", selectorText.value);
 }
 
 (tryout.oninput = e => {
-        url.searchParams.set("selector", selectorText.value);
-        history.replaceState(null, '', `${location.pathname}?${url.searchParams.toString()}`);
-            
-        tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
-        Prism.highlightElement(tokens);
+		url = new URL(location);
+		url.searchParams.set("selector", selectorText.value);
+		history.replaceState(null, '', url);
+
+		tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
+		Prism.highlightElement(tokens);
 
 	try {
 
-            tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
-            tree.classList.remove("error");
-            specificity.textContent = parsel.specificity(selectorText.value);
-            Prism.highlightElement(tree);
+			tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
+			tree.classList.remove("error");
+			specificity.textContent = parsel.specificity(selectorText.value);
+			Prism.highlightElement(tree);
 	}
 	catch (e) {
-            tree.classList.add("error");
-            tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
+			tree.classList.add("error");
+			tree.innerHTML = `<details><summary>${e}</summary>${e.stack.replace(e, "")}</details>`;
 	}
 })();
 </script>
