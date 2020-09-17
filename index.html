@@ -125,13 +125,13 @@ if (selector) {
 	url.searchParams.set("selector", selectorText.value);
 }
 
-(tryout.oninput = e => {
-		url = new URL(location);
-		url.searchParams.set("selector", selectorText.value);
-		history.replaceState(null, '', url);
+(tryout.oninput = e => {	
+	url = new URL(location);
+	url.searchParams.set("selector", selectorText.value);
+	history.replaceState(null, '', url);
 
-		tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
-		Prism.highlightElement(tokens);
+	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
+	Prism.highlightElement(tokens);
 
 	try {
 
