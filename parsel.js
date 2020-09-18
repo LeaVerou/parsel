@@ -221,21 +221,21 @@ export function nestTokens(tokens, {list = true} = {}) {
 }
 
 // Traverse an AST (or part thereof), in depth-first order
-export function walk(node, callback, {subtree = false} = {}) {
+export function walk(node, callback, o, parent) {
 	if (node.type === "complex") {
-		walk(node.left, callback);
-		walk(node.right, callback);
+		walk(node.left, callback, o, node);
+		walk(node.right, callback, o, node);
 	}
 	else if (node.type === "compound") {
 		for (let n of node.list) {
-			walk(n, callback);
+			walk(n, callback, o, node);
 		}
 	}
-	else if (node.subtree && subtree) {
-		walk(node.subtree, callback);
+	else if (node.subtree && o && o.subtree) {
+		walk(node.subtree, callback, o, node);
 	}
 
-	callback(node);
+	callback(node, parent);
 }
 
 /**
