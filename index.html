@@ -118,7 +118,18 @@
 import * as parsel from "./parsel.js";
 self.parsel = parsel; // so that people can experiment in the console
 
-(tryout.oninput = e => {
+let url = new URL(location);
+const selector = url.searchParams.get("selector");
+
+if (selector) {
+	selectorText.value = selector;
+}
+
+(tryout.oninput = e => {	
+	url = new URL(location);
+	url.searchParams.set("selector", selectorText.value);
+	history.replaceState(null, '', url);
+
 	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
 	Prism.highlightElement(tokens);
 
