@@ -267,7 +267,7 @@ export function parse(selector, {recursive = true, list = true} = {}) {
 export function specificityToNumber(specificity, base) {
 	base = base || Math.max(...specificity) + 1;
 
-	return specificity[0] * base ** 2 + specificity[1] * base + specificity[0];
+	return specificity[0] * base ** 2 + specificity[1] * base + specificity[2];
 }
 
 function maxIndexOf(arr) {
