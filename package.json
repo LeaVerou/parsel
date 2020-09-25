@@ -4,7 +4,8 @@
   "description": "A tiny, permissive CSS selector parser",
   "main": "parsel.js",
   "scripts": {
-    "test": "open test.html"
+    "test": "open test.html",
+    "build": "node build.js"
   },
   "repository": {
     "type": "git",
