@@ -34,10 +34,10 @@ data = data.replace(/export function (\w+)/g, ($0, name) => {
 	return "function " + name;
 });
 
-let contents = `(() => {
+let contents = `var parsel = (() => {
 ${data}
 
-self.parsel = {${names.join(", ")}};
+return {${names.join(", ")}};
 })();`;
 
 writeFile("./parsel_nomodule.js", contents);
