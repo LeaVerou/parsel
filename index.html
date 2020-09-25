@@ -19,7 +19,7 @@
 		<li>Simple <a href="#api">API</a></li>
 		<li>Parse & traverse CSS selectors</li>
 		<li>Calculate specificity</li>
-		<li>Only 2KB and no dependencies</li>
+		<li>Only <a href="https://bundlephobia.com/result?p=parsel-js@1.0.0">2KB</a> and no dependencies</li>
 		<li>Supports the entire <a href="https://w3.org/TR/selectors-4">Selectors 4</a> syntax</li>
 		<li>Permissive enough to work with a lot of potential future syntax</li>
 	</ul>
@@ -128,7 +128,18 @@
 import * as parsel from "./parsel.js";
 self.parsel = parsel; // so that people can experiment in the console
 
-(tryout.oninput = e => {
+let url = new URL(location);
+const selector = url.searchParams.get("selector");
+
+if (selector) {
+	selectorText.value = selector;
+}
+
+(tryout.oninput = e => {	
+	url = new URL(location);
+	url.searchParams.set("selector", selectorText.value);
+	history.replaceState(null, '', url);
+
 	tokens.textContent = JSON.stringify(parsel.tokenize(selectorText.value), null, "\t");
 	Prism.highlightElement(tokens);
 
