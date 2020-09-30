@@ -1,6 +1,6 @@
 {
   "name": "parsel-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A tiny, permissive CSS selector parser",
   "main": "parsel.js",
   "scripts": {
