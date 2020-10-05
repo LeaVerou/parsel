@@ -200,10 +200,6 @@ export function nestTokens(tokens, {list = true} = {}) {
 			let left = tokens.slice(0, i);
 			let right = tokens.slice(i + 1);
 
-			if (left.length === 0 || right.length === 0) {
-				throw new Error(`Combinator ${token.content} used in selector ${left.length === 0? "start" : "end"}`);
-			}
-
 			return {
 				type: "complex",
 				combinator: token.content,
@@ -211,6 +207,10 @@ export function nestTokens(tokens, {list = true} = {}) {
 				right: nestTokens(right)
 			};
 		}
+	}
+
+	if (tokens.length === 0) {
+		return null;
 	}
 
 	// If we're here, there are no combinators, so it's just a list
@@ -222,6 +222,10 @@ export function nestTokens(tokens, {list = true} = {}) {
 
 // Traverse an AST (or part thereof), in depth-first order
 export function walk(node, callback, o, parent) {
+	if (!node) {
+		return;
+	}
+
 	if (node.type === "complex") {
 		walk(node.left, callback, o, node);
 		walk(node.right, callback, o, node);
