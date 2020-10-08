@@ -59,7 +59,7 @@ export function walk(node: AST,callback:(node: AST,parentNode: AST)=>{}):void ;
 /**
  * Calculate specificity (returns an array of 3 numbers):
  */
-export function specificity(selector: string, options: SpecificityOptions):number[];
+export function specificity(selector: string| AST, options: SpecificityOptions):number[];
 
 /**
  *  To convert the specificity array to a number
