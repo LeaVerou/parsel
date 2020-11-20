@@ -179,7 +179,12 @@
 		insert(parsel.TOKENS, {before: "type", property: "nest", value: /@nest\b/g});
 	</code></pre>
 
-	<p>For convenience, you can also find this helper function in <code>insert.js</code></p>
+	<p>For convenience, you can also find this helper function in <a href="insert.js"><code>insert.js</code></a>, and you can just import it:</p>
+
+	<pre><code>
+		import insert from "./parsel/insert.js";
+		insert(parsel.TOKENS, {before: "type", property: "nest", value: /@nest\b/g});
+	</code></pre>
 </section>
 
 <footer>
