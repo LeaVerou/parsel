@@ -1,4 +1,4 @@
-const TOKENS = {
+export const TOKENS = {
 	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<caseSensitive>[iIsS])?\s*)?\]/gu,
 	id: /#(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
 	class: /\.(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
@@ -11,8 +11,8 @@ const TOKENS = {
 
 const TOKENS_WITH_PARENS = new Set(["pseudo-class", "pseudo-element"]);
 const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
-const TRIM_TOKENS = new Set(["combinator", "comma"]);
-const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any"]);
+export const TRIM_TOKENS = new Set(["combinator", "comma"]);
+export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any"]);
 
 const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
 TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")

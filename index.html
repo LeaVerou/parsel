@@ -22,6 +22,7 @@
 		<li>Only <a href="https://bundlephobia.com/result?p=parsel-js@1.0.0">2KB</a> and no dependencies</li>
 		<li>Supports the entire <a href="https://w3.org/TR/selectors-4">Selectors 4</a> syntax</li>
 		<li>Permissive enough to work with a lot of potential future syntax</li>
+		<li><a href="#extensibility">Extensible</a></li>
 	</ul>
 </header>
 
@@ -118,6 +119,69 @@
 	<p><strong>Try it out!</strong> In this page, <code>parsel</code> is assigned to a global so you can experiment with the API in the console!</p>
 </section>
 
+<section id="extensibility">
+	<h2>Extensibility</h2>
+
+	<p>You can import <code>TOKENS</code> and add new types.
+	All values need to be regular expression objects with the global flag on.
+	For example, to add the <a href="https://drafts.csswg.org/css-nesting/#nesting-selector">nesting selector</a>:
+
+	<pre><code>
+		parsel.TOKENS.nesting = /&/g;
+	</code></pre>
+
+	<p>Do note that this way, new tokens are added to the end of the object literal.
+		You may want to add tokens before other tokens, e.g. to add support for <a href="https://drafts.csswg.org/css-nesting/#at-nest"><code>@nest</code></a>.
+		This is a little tricky, because you cannot just replace the object literal with another,
+		so the only way to add a property after another property is to <strong>delete</strong> all properties after that property, add your new property, then re-add them.
+	</p>
+
+	<p>So, to add support for <code>@nest</code>, we need to add it before the <code>type</code> token, since <code>@nest</code> tokens are currently incorrectly parsed as <code>type</code> tokens.
+		Since <code>type</code> is the very last token, we only need to delete and re-add that:</p>
+
+	<pre><code>
+		// Delete property type
+		let temp = {};
+		temp.type = parsel.TOKENS.type;
+		delete parsel.TOKENS.type;
+
+		// Add new token
+		parsel.TOKENS.nest = /@nest\b/g;
+
+		// Re-add type
+		parsel.TOKENS.type = temp.type;
+	</code></pre>
+
+	<p>This can get tedious, so you can use a helper function for that:</p>
+
+	<pre><code>
+		function insert(obj, {before, property, value}) {
+			let found, temp = {};
+
+			for (let p in obj) {
+				if (p === before) {
+					found = true;
+				}
+
+				if (found) {
+					temp[p] = obj[p];
+					delete obj[p];
+				}
+			}
+
+			Object.assign(obj, {property: value, ...temp});
+		}
+	</code></pre>
+
+	<p>Then you can do:</p>
+
+	<pre><code>
+		insert(parsel.TOKENS, {before: "type", property: "nest", value: /@nest\b/g});
+	</code></pre>
+
+	<p>For convenience, you can also find this helper function in <code>insert.js</code></p>
+</section>
+
 <footer>
 	<p>Made with ❤ by <a href="https://lea.verou.me">Lea Verou</a>
 		&bull; <a href="test.html">Tests</a>
@@ -135,7 +199,7 @@ if (selector) {
 	selectorText.value = selector;
 }
 
-(tryout.oninput = e => {	
+(tryout.oninput = e => {
 	url = new URL(location);
 	url.searchParams.set("selector", selectorText.value);
 	history.replaceState(null, '', url);
