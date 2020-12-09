@@ -120,11 +120,13 @@ export function tokenize (selector) {
 
 	// Replace strings with whitespace strings (to preserve offsets)
 	let strings = [];
-	// FIXME Does not account for escaped backslashes before a quote
-	selector = selector.replace(/(['"])(\\\1|.)+?\1/g, (str, quote, content, start) => {
-		strings.push({str, start});
-		return quote + "§".repeat(content.length) + quote;
-	});
+	selector = selector
+		.replace(/(?:"((?:[^"\\]|\\.)*)")|(?:'((?:[^'\\]|\\.)*)')/g, (str, contentDouble, contentSingle, start) => {
+			strings.push({str, start});
+			const content = (contentDouble === void 0) ? contentSingle : contentDouble;
+			const quote = (contentDouble === void 0) ? '\'' : '"';
+			return quote + "§".repeat(content.length) + quote;
+		});
 
 	// Now that strings are out of the way, extract parens and replace them with parens with whitespace (to preserve offsets)
 	let parens = [], offset = 0, start;
