@@ -12,8 +12,17 @@ export const TOKENS = {
 const TOKENS_WITH_PARENS = new Set(["pseudo-class", "pseudo-element"]);
 const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
 export const TRIM_TOKENS = new Set(["combinator", "comma"]);
-export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any"]);
-export const INDEX_PSEUDO_CLASSES = new Set(["nth-child", "nth-last-child"]);
+export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any", "nth-child", "nth-last-child"]);
+
+const NTH_CHILD_ARG = {
+	regex: /([\dn+-]+)\s+of\s+(.+)/,
+	groups: ['index', 'subtree']
+}
+
+export const RECURSIVE_PSEUDO_CLASSES_ARGS = {
+	"nth-child": NTH_CHILD_ARG,
+	"nth-last-child": NTH_CHILD_ARG
+}
 const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
 TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
 TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu")
@@ -261,14 +270,23 @@ export function parse(selector, {recursive = true, list = true} = {}) {
 		walk(ast, node => {
 			if (node.type === "pseudo-class" && node.argument) {
 				if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
-					node.subtree = parse(node.argument, {recursive: true, list: true});
-				} else if (INDEX_PSEUDO_CLASSES.has(node.name)) {
-					const ofRegex = /(-?\d+n(?:\s*[+-]\s*\d+)?|\d+)\s+of\s+(.+)/
-					const match = ofRegex.exec(node.argument)
-					if (match) {
-						node.index = match[1];
-						node.subtree = parse(match[2]);
+					let argument = node.argument;
+					if (RECURSIVE_PSEUDO_CLASSES_ARGS[node.name]) {
+						const {regex, groups} = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
+						const match = regex.exec(argument);
+						if (!match) {
+							return;
+						}
+
+						groups.forEach((group, i) => {
+							if (match[i + 1]) {
+								node[group] = match[i + 1];
+								if (group === "subtree")
+									argument = match[i + 1];
+							}
+						});
 					}
+					node.subtree = parse(argument, {recursive: true, list: true});
 				}
 			}
 		});
