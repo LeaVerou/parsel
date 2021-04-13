@@ -14,10 +14,7 @@ const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
 export const TRIM_TOKENS = new Set(["combinator", "comma"]);
 export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any", "nth-child", "nth-last-child"]);
 
-const NTH_CHILD_ARG = {
-	regex: /([\dn+-]+)\s+of\s+(.+)/,
-	groups: ['index', 'subtree']
-}
+const NTH_CHILD_ARG = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/
 
 export const RECURSIVE_PSEUDO_CLASSES_ARGS = {
 	"nth-child": NTH_CHILD_ARG,
@@ -271,22 +268,19 @@ export function parse(selector, {recursive = true, list = true} = {}) {
 			if (node.type === "pseudo-class" && node.argument) {
 				if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
 					let argument = node.argument;
-					if (RECURSIVE_PSEUDO_CLASSES_ARGS[node.name]) {
-						const {regex, groups} = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
-						const match = regex.exec(argument);
+					const childArg = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
+					if (childArg) {
+						const match = childArg.exec(argument);
 						if (!match) {
 							return;
 						}
 
-						groups.forEach((group, i) => {
-							if (match[i + 1]) {
-								node[group] = match[i + 1];
-								if (group === "subtree")
-									argument = match[i + 1];
-							}
-						});
+						Object.assign(node, match.groups);
+						argument = match.groups.subtree;
 					}
-					node.subtree = parse(argument, {recursive: true, list: true});
+					if (argument) {
+						node.subtree = parse(argument, {recursive: true, list: true});
+					}
 				}
 			}
 		});
