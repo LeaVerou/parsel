@@ -12,7 +12,13 @@ export const TOKENS = {
 const TOKENS_WITH_PARENS = new Set(["pseudo-class", "pseudo-element"]);
 const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
 export const TRIM_TOKENS = new Set(["combinator", "comma"]);
-export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any"]);
+export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any", "nth-child", "nth-last-child"]);
+
+export const RECURSIVE_PSEUDO_CLASSES_ARGS = {
+	"nth-child": /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/
+}
+
+RECURSIVE_PSEUDO_CLASSES["nth-last-child"] = RECURSIVE_PSEUDO_CLASSES_ARGS["nth-child"];
 
 const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
 TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
@@ -259,8 +265,23 @@ export function parse(selector, {recursive = true, list = true} = {}) {
 
 	if (recursive) {
 		walk(ast, node => {
-			if (node.type === "pseudo-class" && node.argument && RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
-				node.subtree = parse(node.argument, {recursive: true, list: true});
+			if (node.type === "pseudo-class" && node.argument) {
+				if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
+					let argument = node.argument;
+					const childArg = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
+					if (childArg) {
+						const match = childArg.exec(argument);
+						if (!match) {
+							return;
+						}
+
+						Object.assign(node, match.groups);
+						argument = match.groups.subtree;
+					}
+					if (argument) {
+						node.subtree = parse(argument, {recursive: true, list: true});
+					}
+				}
 			}
 		});
 	}
