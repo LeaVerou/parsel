@@ -14,12 +14,12 @@ const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
 export const TRIM_TOKENS = new Set(["combinator", "comma"]);
 export const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any", "nth-child", "nth-last-child"]);
 
-const NTH_CHILD_ARG = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/
-
 export const RECURSIVE_PSEUDO_CLASSES_ARGS = {
-	"nth-child": NTH_CHILD_ARG,
-	"nth-last-child": NTH_CHILD_ARG
+	"nth-child": /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/
 }
+
+RECURSIVE_PSEUDO_CLASSES["nth-last-child"] = RECURSIVE_PSEUDO_CLASSES_ARGS["nth-child"];
+
 const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
 TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
 TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu")
