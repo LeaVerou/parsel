@@ -2,10 +2,19 @@
   "name": "parsel-js",
   "version": "1.0.1",
   "description": "A tiny, permissive CSS selector parser",
-  "main": "parsel.js",
+  "main": "dist/parsel.cmd.js",
+  "module": "parsel.js",
+  "exports": {
+    ".": {
+      "import": "./parsel.js",
+      "require": "./dist/parsel.cmd.js",
+      "browser": "./parsel.js",
+      "umd": "./dist/parsel.umd.js"
+    }
+  },
   "scripts": {
     "test": "open test.html",
-    "build": "node build.js"
+    "build": "rollup -c"
   },
   "repository": {
     "type": "git",
@@ -20,5 +29,11 @@
   "bugs": {
     "url": "https://github.com/LeaVerou/parsel/issues"
   },
-  "homepage": "https://projects.verou.me/parsel"
+  "homepage": "https://projects.verou.me/parsel",
+  "dependencies": {
+    "rollup": "^2.49.0"
+  },
+  "devDependencies": {
+    "rollup-plugin-terser": "^7.0.2"
+  }
 }
