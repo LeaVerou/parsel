@@ -30,10 +30,8 @@
     "url": "https://github.com/LeaVerou/parsel/issues"
   },
   "homepage": "https://projects.verou.me/parsel",
-  "dependencies": {
-    "rollup": "^2.49.0"
-  },
   "devDependencies": {
+    "rollup": "^2.49.0",
     "rollup-plugin-terser": "^7.0.2"
   }
 }
