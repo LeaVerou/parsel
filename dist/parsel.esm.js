@@ -1,7 +1,3 @@
-'use strict';
-
-Object.defineProperty(exports, '__esModule', { value: true });
-
 const TOKENS = {
 	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<caseSensitive>[iIsS])?\s*)?\]/gu,
 	id: /#(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
@@ -363,15 +359,4 @@ function specificity(selector, {format = "array"} = {}) {
 	return ret;
 }
 
-exports.RECURSIVE_PSEUDO_CLASSES = RECURSIVE_PSEUDO_CLASSES;
-exports.RECURSIVE_PSEUDO_CLASSES_ARGS = RECURSIVE_PSEUDO_CLASSES_ARGS;
-exports.TOKENS = TOKENS;
-exports.TRIM_TOKENS = TRIM_TOKENS;
-exports.gobbleParens = gobbleParens;
-exports.nestTokens = nestTokens;
-exports.parse = parse;
-exports.specificity = specificity;
-exports.specificityToNumber = specificityToNumber;
-exports.tokenize = tokenize;
-exports.tokenizeBy = tokenizeBy;
-exports.walk = walk;
+export { RECURSIVE_PSEUDO_CLASSES, RECURSIVE_PSEUDO_CLASSES_ARGS, TOKENS, TRIM_TOKENS, gobbleParens, nestTokens, parse, specificity, specificityToNumber, tokenize, tokenizeBy, walk };

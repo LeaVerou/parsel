@@ -2,14 +2,14 @@
   "name": "parsel-js",
   "version": "1.0.1",
   "description": "A tiny, permissive CSS selector parser",
-  "main": "dist/parsel.cmd.js",
-  "module": "parsel.js",
+  "main": "dist/parsel.cmd.min.js",
+  "module": "dist/parsel.esm.min.js",
   "exports": {
     ".": {
-      "import": "./parsel.js",
-      "require": "./dist/parsel.cmd.js",
+      "import": "./dist/parsel.esm.min.js",
+      "require": "./dist/parsel.cmd.min.js",
       "browser": "./parsel.js",
-      "umd": "./dist/parsel.umd.js"
+      "umd": "./dist/parsel.umd.min.js"
     }
   },
   "scripts": {
