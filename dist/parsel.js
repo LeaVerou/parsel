@@ -1,4 +1,3 @@
-var parsel = (() => {
 const TOKENS = {
 	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<caseSensitive>[iIsS])?\s*)?\]/gu,
 	id: /#(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
@@ -13,11 +12,17 @@ const TOKENS = {
 const TOKENS_WITH_PARENS = new Set(["pseudo-class", "pseudo-element"]);
 const TOKENS_WITH_STRINGS = new Set([...TOKENS_WITH_PARENS, "attribute"]);
 const TRIM_TOKENS = new Set(["combinator", "comma"]);
-const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any"]);
+const RECURSIVE_PSEUDO_CLASSES = new Set(["not", "is", "where", "has", "matches", "-moz-any", "-webkit-any", "nth-child", "nth-last-child"]);
+
+const RECURSIVE_PSEUDO_CLASSES_ARGS = {
+	"nth-child": /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/
+};
+
+RECURSIVE_PSEUDO_CLASSES["nth-last-child"] = RECURSIVE_PSEUDO_CLASSES_ARGS["nth-child"];
 
 const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
-TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
-TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu")
+TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu");
+TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu");
 
 function gobbleParens(text, i) {
 	let str = "", stack = [];
@@ -54,7 +59,7 @@ function tokenizeBy (text, grammar) {
 
 	var strarr = [text];
 
-	tokenloop: for (var token in grammar) {
+	for (var token in grammar) {
 		let pattern = grammar[token];
 
 		for (var i=0; i < strarr.length; i++) { // Don’t cache length as it changes during the loop
@@ -260,8 +265,23 @@ function parse(selector, {recursive = true, list = true} = {}) {
 
 	if (recursive) {
 		walk(ast, node => {
-			if (node.type === "pseudo-class" && node.argument && RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
-				node.subtree = parse(node.argument, {recursive: true, list: true});
+			if (node.type === "pseudo-class" && node.argument) {
+				if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
+					let argument = node.argument;
+					const childArg = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
+					if (childArg) {
+						const match = childArg.exec(argument);
+						if (!match) {
+							return;
+						}
+
+						Object.assign(node, match.groups);
+						argument = match.groups.subtree;
+					}
+					if (argument) {
+						node.subtree = parse(argument, {recursive: true, list: true});
+					}
+				}
 			}
 		});
 	}
@@ -339,6 +359,4 @@ function specificity(selector, {format = "array"} = {}) {
 	return ret;
 }
 
-
-return {gobbleParens, tokenizeBy, tokenize, nestTokens, walk, parse, specificityToNumber, specificity};
-})();
+export { RECURSIVE_PSEUDO_CLASSES, RECURSIVE_PSEUDO_CLASSES_ARGS, TOKENS, TRIM_TOKENS, gobbleParens, nestTokens, parse, specificity, specificityToNumber, tokenize, tokenizeBy, walk };
