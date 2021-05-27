@@ -1,6 +1,6 @@
 {
   "name": "parsel-js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A tiny, permissive CSS selector parser",
   "main": "dist/cjs/parsel.min.js",
   "module": "dist/parsel.min.js",
