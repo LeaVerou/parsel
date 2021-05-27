@@ -36,12 +36,12 @@ export default {
   },
   {
     name: 'parsel',
-    file: 'dist/parsel.esm.js',
+    file: 'dist/parsel.js',
     format: 'es'
   },
   {
     name: 'parsel',
-    file: 'dist/parsel.esm.min.js',
+    file: 'dist/parsel.min.js',
     format: 'es',
     plugins: [ terser() ]
   },

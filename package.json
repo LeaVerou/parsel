@@ -3,10 +3,10 @@
   "version": "1.0.1",
   "description": "A tiny, permissive CSS selector parser",
   "main": "dist/parsel.cmd.min.js",
-  "module": "dist/parsel.esm.min.js",
+  "module": "dist/parsel.min.js",
   "exports": {
     ".": {
-      "import": "./dist/parsel.esm.min.js",
+      "import": "./dist/parsel.min.js",
       "require": "./dist/parsel.cmd.min.js",
       "browser": "./parsel.js",
       "umd": "./dist/parsel.umd.min.js"
