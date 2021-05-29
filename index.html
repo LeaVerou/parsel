@@ -58,14 +58,14 @@
 
 	<p>Parsel is an ES module. You import it like so:</p>
 
-	<pre><code>import * as parsel from "https://projects.verou.me/parsel/parsel.js"</code></pre>
+	<pre><code>import * as parsel from "https://projects.verou.me/parsel/dist/parsel.js"</code></pre>
 
 	<p>Note that to use that your script needs to use <code>type="module"</code> or be imported from a script that does.
 		If you can't or don't want to use ES modules you can use <code>parsel_nomodule.js</code> in a regular <code>&lt;script></code> tag:
 	</p>
 
 	<pre class="language-markup"><code>
-		&lt;script src="https://projects.verou.me/parsel/parsel_nomodule.js">&lt;/script>
+		&lt;script src="https://projects.verou.me/parsel/dist/nomodule/parsel.js">&lt;/script>
 	</code></pre>
 
 	<p>After that, you can use <code>parsel</code> as a global.</p>
@@ -74,7 +74,7 @@
 
 	<pre class="language-markup"><code>
 		&lt;script type="module">
-			import * as parsel from "https://projects.verou.me/parsel/parsel.js";
+			import * as parsel from "https://projects.verou.me/parsel/dist/parsel.js";
 			window.parsel = parsel;
 		&lt;/script>
 	</code></pre>
