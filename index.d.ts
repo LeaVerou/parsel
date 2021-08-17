@@ -7,14 +7,14 @@
 
 interface Tokens {
 	type:
-		| 'class'
-		| 'attribute'
-		| 'id'
-		| 'type'
-		| 'pseudo-element'
-		| 'pseudo-class'
-		| 'comma'
-		| 'combinator';
+		| "class"
+		| "attribute"
+		| "id"
+		| "type"
+		| "pseudo-element"
+		| "pseudo-class"
+		| "comma"
+		| "combinator";
 	content: string;
 	name: string;
 	namespace?: string;
@@ -23,23 +23,23 @@ interface Tokens {
 	operator?: string;
 	argument?: string;
 	subtree?: AST;
-	caseSensitive?: 'i';
+	caseSensitive?: "i";
 }
 
 interface Complex {
-	type: 'complex';
+	type: "complex";
 	combinator: string;
 	right: AST;
 	left: AST;
 }
 
 interface Compound {
-	type: 'compound';
+	type: "compound";
 	list: Tokens[];
 }
 
 interface List {
-	type: 'list';
+	type: "list";
 	list: AST[];
 }
 
