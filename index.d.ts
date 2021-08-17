@@ -29,8 +29,8 @@ interface Tokens {
 interface Complex {
 	type: 'complex'
 	combinator: string
-	right: Complex | Compound | Tokens
-	left: Complex | Compound | Tokens
+	right: AST
+	left: AST
 }
 
 interface Compound {
