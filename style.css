@@ -139,6 +139,44 @@ body > footer > * {
 			text-shadow: 0 0 .1em white;
 			font-size: 75%;
 		}
+	
+		#stringify-display {
+			grid-column: 1 / span 2;
+			display: flex;
+    	flex-direction: column;
+			margin: .5em 0;
+			padding: 1em;
+			background: var(--color-green);
+			font-family: var(--font-heading);
+			font-size: 150%;
+		}
+	
+			#stringify {
+				border: 3 px solid var(--color-green);
+				border-radius: 0.2em;
+				padding: 0.2em 0.4em;
+				margin : 0.4em 0px;
+				font-family: var(--font-mono);
+				box-sizing: border-box;
+				background: var(--color-pale-blue);
+			}
+	
+			@media (min-width: 600px) {
+				#stringify-display {
+					grid-template-columns: 1fr auto;
+				}
+	
+				#stringify {
+					grid-column: 2;
+					grid-row: 1 / span 2;
+				}
+			}
+	
+			#stringify-display code {
+				background: none;
+				text-shadow: 0 0 .1em white;
+				font-size: 75%;
+			}
 
 	#results {
 		display: flex;

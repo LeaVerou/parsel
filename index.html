@@ -36,11 +36,19 @@
 			<input type="checkbox" id="recursive" checked>
 			Recursive (parse arguments of <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc)
 		</label>
+		<label style="display:block">
+			<input type="checkbox" id="includeCommaInList" checked>
+			Include Nodes of type <code>Comma</code> in the parse tree 
+		</label>
 	</header>
 	<div id="specificity-display">
 		Specificity:
 		<code>parsel.specificity(selector);</code>
 		<strong id="specificity"></strong></div>
+		<div id="stringify-display">
+		Stringify:
+		<code>parsel.stringify(ast);</code>
+		<pre id="stringify">#foo > .bar + div.k1.k2 [id='baz']:hello(2):not(:where(#yolo))::before</pre></div>
 	<div id="results">
 		<article>
 			<h2>Tokens <code>parsel.tokenize(selector);</code></h2>
@@ -98,11 +106,14 @@
 
 	<p>You can also provide options:</p>
 
-	<pre><code>parsel.parse(selector, {recursive: false, list: false})</code></pre>
+	<pre><code>parsel.parse(selector, {recursive: false, list: false, includeCommaInList: true})</code></pre>
 
 	<p>The <code>recursive</code> option parses the arguments of pseudo-classes whose argument is a selector like <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc into a <code>subtree</code> property.
-	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework)</p>
-
+	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework)
+	The <code>includeCommaInList</code> option adds the node of type comma in the selector lists (<code>D, E, F</code>). By default <code>includeCommaInList</code> will be false.
+	
+  </p>
+	
 	<p>Traverse all tokens of a (sub)tree:</p>
 
 	<pre><code>parsel.walk(node, callback)</code></pre>
@@ -115,7 +126,13 @@
 
 	<p>To convert the specificity array to a number, you can use <code>parsel.specificityToNumber(specificity [, base])</code>.
 		If a base is not provided, it will be the max specificity component + 1.</p>
+  
+	<p>Convert AST tree back to selector string (returns selector string):</p>
 
+	<pre><code>parsel.stringify(ast)</code></pre>
+	
+	<p>Make sure the <code>ast</code> provided here is generated using <code>parsel.parse</code> API (or) an object which follows the same structure as <code>parsel.parse</code></p>
+		
 	<p><strong>Try it out!</strong> In this page, <code>parsel</code> is assigned to a global so you can experiment with the API in the console!</p>
 </section>
 
@@ -218,6 +235,7 @@ if (selector) {
 		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
 		tree.classList.remove("error");
 		specificity.textContent = parsel.specificity(selectorText.value);
+		stringify.textContent = parsel.stringify(parsel.parse(selectorText.value, {includeCommaInList: includeCommaInList.checked}))
 		Prism.highlightElement(tree);
 	}
 	catch (e) {
