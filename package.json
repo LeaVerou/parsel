@@ -14,7 +14,8 @@
   },
   "scripts": {
     "test": "open test.html",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
   },
   "repository": {
     "type": "git",

@@ -96,6 +96,12 @@
 }</td>
 		</tr>
 	</table>
+	<table class="reftest" data-test="testStringify" data-columns="3">
+		<tr>
+			<td>{"type": "compound","list": [{"type": "type","content": "div","name": "div","pos": [0,3]},{"type": "pseudo-class","content": ":nth-child(2n+1 of #someId.someClass)","name": "nth-child","argument": "2n+1 of #someId.someClass","pos": [3,40],"index": "2n+1","subtree": {"type": "compound","list": [{"type": "id","content": "#someId","name": "someId","pos": [0,7]},{"type": "class","content": ".someClass","name": "someClass","pos": [7,17]}]}}]}</td>
+			<td>div:nth-child(2n+1 of #someId.someClass)</td>
+		</tr>
+	</table>
 </section>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/blissfuljs/1.0.4/bliss.min.js"></script>
@@ -125,6 +131,13 @@ window.testIndexedPseudoClass = function(test, result, expected) {
 	const serialized = JSON.stringify({ast, specificity}, null, "\t");
 	result.textContent = serialized;
 	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
+}
+window.testStringify = function (test, result, expected) {
+	const ast = JSON.parse(test.textContent);
+	const selector = parsel.stringify(ast);
+	test.textContent = JSON.stringify(JSON.parse(test.textContent), null, "\t");
+	result.textContent = selector;
+	return Test.equals(expected.textContent, selector);
 }
 </script>
 
