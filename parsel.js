@@ -107,7 +107,7 @@ export function tokenizeBy (text, grammar) {
 			token.pos = [offset, offset + length];
 
 			if (TRIM_TOKENS.has(token.type)) {
-				token.actualContent = token.content;
+				token.raw = token.content;
 				token.content = token.content.trim() || " ";
 			}
 		}
@@ -213,7 +213,7 @@ export function nestTokens(tokens, {list = true, includeCommaInList = false } = 
 			return {
 				type: "complex",
 				combinator: token.content,
-				actualCombinator: token.actualContent,
+				raw: token.raw,
 				left: nestTokens(left),
 				right: nestTokens(right)
 			};
@@ -382,12 +382,12 @@ function recursiveStringify(node, string) {
 		}
 			break;
 		case 'comma': {
-			string += node.actualContent;
+			string += node.raw;
 		}
 			break;
 		case 'complex': {
 			string = recursiveStringify(node.left, string);
-			string += node.actualCombinator;
+			string += node.raw;
 			string = recursiveStringify(node.right, string);
 		}
 			break;
