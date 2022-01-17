@@ -364,45 +364,40 @@ export function specificity(selector, {format = "array"} = {}) {
 	return ret;
 }
 
-function recursiveStringify(node, string) {
-	switch (node.type) {
-		case 'compound': {
-			for (let i = 0, length = node.list.length; i < length; i++) {
-				string = recursiveStringify(node.list[i], string)
-			}
-		}
-			break;
-		case 'attribute':
-		case 'id':
-		case 'class':
-		case 'pseudo-element':
-		case 'pseudo-class':
-		case 'type': {
-			string += node.content;
-		}
-			break;
-		case 'comma': {
-			string += node.raw;
-		}
-			break;
-		case 'complex': {
-			string = recursiveStringify(node.left, string);
-			string += node.raw;
-			string = recursiveStringify(node.right, string);
-		}
-			break;
-		case 'list': {
-			string = node.list.map(function (listItem) {
-				return recursiveStringify(listItem, '')
-			}).join('');
-		}
-	}
-	return string;
-}
-
 export function stringify(ast) {
 	if (typeof ast === 'object') {
-		return recursiveStringify(ast, '');
+		let string = '';
+		switch (ast.type) {
+			case 'compound': {
+				string = ast.list.reduce((acc, item) => {
+					return acc + stringify(item);
+				}, string);
+			}
+				break;
+			case 'attribute':
+			case 'id':
+			case 'class':
+			case 'pseudo-element':
+			case 'pseudo-class':
+			case 'type': {
+				string += ast.content;
+			}
+				break;
+			case 'comma': {
+				string += ast.raw;
+			}
+				break;
+			case 'complex': {
+				string += stringify(ast.left);
+				string += ast.raw;
+				string += stringify(ast.right);
+			}
+				break;
+			case 'list': {
+				string = ast.list.map(stringify).join('');
+			}
+		}
+		return string;
 	}
 	return null;
 }

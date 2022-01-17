@@ -133,6 +133,31 @@ window.testIndexedPseudoClass = function(test, result, expected) {
 	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
 }
 window.testStringify = function (test, result, expected) {
+
+	const hiddenTestCases = [
+		'div',
+		'.class',
+		'#foo',
+		'#foo.bar',
+		'#foo.bar[href]',
+		'#foo.bar[href="http://example.com"]',
+		// The below one breaks the test due to https://github.com/LeaVerou/parsel/issues/26
+		// it's not a problem of stringify method
+		'#foo.bar[href="http://example.com"][title="content"]:nth-child(2n+1)',
+		'#foo.bar[href="http://example.com"]:nth-child(2n+1 of #someId.someClass)',
+		'#foo.bar[href="http://example.com"]:nth-child(2n+1 of #someId.someClass) > .bar',
+		'#foo.bar[href="http://example.com"]:nth-child(2n+1 of #someId.someClass) > .bar > .baz',
+		'#foo.bar[href="http://example.com"], div:nth-child(2n+1 of #someId.someClass) > .bar ,         .baz > .qux'
+	];
+
+	hiddenTestCases.forEach(testCase => {
+		const ast = parsel.parse(testCase,{ includeCommaInList : true });
+		const constructed = parsel.stringify(ast);
+		if(testCase !== constructed) {
+			console.error(testCase, constructed);
+		}
+	});
+
 	const ast = JSON.parse(test.textContent);
 	const selector = parsel.stringify(ast);
 	test.textContent = JSON.stringify(JSON.parse(test.textContent), null, "\t");
