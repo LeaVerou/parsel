@@ -36,10 +36,6 @@
 			<input type="checkbox" id="recursive" checked>
 			Recursive (parse arguments of <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc)
 		</label>
-		<label style="display:block">
-			<input type="checkbox" id="includeCommaInList" checked>
-			Include Nodes of type <code>Comma</code> in the parse tree 
-		</label>
 	</header>
 	<div id="specificity-display">
 		Specificity:
@@ -106,11 +102,10 @@
 
 	<p>You can also provide options:</p>
 
-	<pre><code>parsel.parse(selector, {recursive: false, list: false, includeCommaInList: true})</code></pre>
+	<pre><code>parsel.parse(selector, {recursive: false, list: false})</code></pre>
 
 	<p>The <code>recursive</code> option parses the arguments of pseudo-classes whose argument is a selector like <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc into a <code>subtree</code> property.
 	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework)
-	The <code>includeCommaInList</code> option adds the node of type comma in the selector lists (<code>D, E, F</code>). By default <code>includeCommaInList</code> will be false.
 	
   </p>
 	
@@ -235,7 +230,7 @@ if (selector) {
 		tree.textContent = JSON.stringify(parsel.parse(selectorText.value, {recursive: recursive.checked}), null, "\t");
 		tree.classList.remove("error");
 		specificity.textContent = parsel.specificity(selectorText.value);
-		stringify.textContent = parsel.stringify(parsel.parse(selectorText.value, {includeCommaInList: includeCommaInList.checked}))
+		stringify.textContent = parsel.stringify(parsel.parse(selectorText.value))
 		Prism.highlightElement(tree);
 	}
 	catch (e) {

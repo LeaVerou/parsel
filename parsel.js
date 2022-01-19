@@ -107,7 +107,6 @@ export function tokenizeBy (text, grammar) {
 			token.pos = [offset, offset + length];
 
 			if (TRIM_TOKENS.has(token.type)) {
-				token.raw = token.content;
 				token.content = token.content.trim() || " ";
 			}
 		}
@@ -172,7 +171,7 @@ export function tokenize (selector) {
 }
 
 // Convert a flat list of tokens into a tree of complex & compound selectors
-export function nestTokens(tokens, {list = true, includeCommaInList = false } = {}) {
+export function nestTokens(tokens, {list = true} = {}) {
 	if (list && tokens.find(t => t.type === "comma")) {
 		let selectors = [], temp = [];
 
@@ -183,9 +182,6 @@ export function nestTokens(tokens, {list = true, includeCommaInList = false } = 
 				}
 
 				selectors.push(nestTokens(temp, {list: false}));
-				if (includeCommaInList) {
-					selectors.push(tokens[i]);
-				}
 				temp.length = 0;
 			}
 			else {
@@ -213,7 +209,6 @@ export function nestTokens(tokens, {list = true, includeCommaInList = false } = 
 			return {
 				type: "complex",
 				combinator: token.content,
-				raw: token.raw,
 				left: nestTokens(left),
 				right: nestTokens(right)
 			};
@@ -259,14 +254,14 @@ export function walk(node, callback, o, parent) {
  * @param options.recursive {Boolean} Whether to parse the arguments of pseudo-classes like :is(), :has() etc. Defaults to true.
  * @param options.list {Boolean} Whether this can be a selector list (A, B, C etc). Defaults to true.
  */
-export function parse(selector, {recursive = true, list = true, includeCommaInList = false } = {}) {
+export function parse(selector, {recursive = true, list = true} = {}) {
 	let tokens = tokenize(selector);
 
 	if (!tokens) {
 		return null;
 	}
 
-	let ast = nestTokens(tokens, {list, includeCommaInList });
+	let ast = nestTokens(tokens, {list});
 
 	if (recursive) {
 		walk(ast, node => {
@@ -383,18 +378,14 @@ export function stringify(ast) {
 				string += ast.content;
 			}
 				break;
-			case 'comma': {
-				string += ast.raw;
-			}
-				break;
 			case 'complex': {
 				string += stringify(ast.left);
-				string += ast.raw;
+				string += ast.combinator;
 				string += stringify(ast.right);
 			}
 				break;
 			case 'list': {
-				string = ast.list.map(stringify).join('');
+				string = ast.list.map(stringify).join(', ');
 			}
 		}
 		return string;
