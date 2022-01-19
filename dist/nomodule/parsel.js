@@ -110,7 +110,6 @@ var parsel = (function (exports) {
 				token.pos = [offset, offset + length];
 
 				if (TRIM_TOKENS.has(token.type)) {
-					token.actualContent = token.content;
 					token.content = token.content.trim() || " ";
 				}
 			}
@@ -175,7 +174,7 @@ var parsel = (function (exports) {
 	}
 
 	// Convert a flat list of tokens into a tree of complex & compound selectors
-	function nestTokens(tokens, {list = true, includeCommaInList = false } = {}) {
+	function nestTokens(tokens, {list = true} = {}) {
 		if (list && tokens.find(t => t.type === "comma")) {
 			let selectors = [], temp = [];
 
@@ -186,9 +185,6 @@ var parsel = (function (exports) {
 					}
 
 					selectors.push(nestTokens(temp, {list: false}));
-					if (includeCommaInList) {
-						selectors.push(tokens[i]);
-					}
 					temp.length = 0;
 				}
 				else {
@@ -216,7 +212,6 @@ var parsel = (function (exports) {
 				return {
 					type: "complex",
 					combinator: token.content,
-					actualCombinator: token.actualContent,
 					left: nestTokens(left),
 					right: nestTokens(right)
 				};
@@ -262,14 +257,14 @@ var parsel = (function (exports) {
 	 * @param options.recursive {Boolean} Whether to parse the arguments of pseudo-classes like :is(), :has() etc. Defaults to true.
 	 * @param options.list {Boolean} Whether this can be a selector list (A, B, C etc). Defaults to true.
 	 */
-	function parse(selector, {recursive = true, list = true, includeCommaInList = false } = {}) {
+	function parse(selector, {recursive = true, list = true} = {}) {
 		let tokens = tokenize(selector);
 
 		if (!tokens) {
 			return null;
 		}
 
-		let ast = nestTokens(tokens, {list, includeCommaInList });
+		let ast = nestTokens(tokens, {list});
 
 		if (recursive) {
 			walk(ast, node => {
@@ -367,45 +362,36 @@ var parsel = (function (exports) {
 		return ret;
 	}
 
-	function recursiveStringify(node, string) {
-		switch (node.type) {
-			case 'compound': {
-				for (let i = 0, length = node.list.length; i < length; i++) {
-					string = recursiveStringify(node.list[i], string);
-				}
-			}
-				break;
-			case 'attribute':
-			case 'id':
-			case 'class':
-			case 'pseudo-element':
-			case 'pseudo-class':
-			case 'type': {
-				string += node.content;
-			}
-				break;
-			case 'comma': {
-				string += node.actualContent;
-			}
-				break;
-			case 'complex': {
-				string = recursiveStringify(node.left, string);
-				string += node.actualCombinator;
-				string = recursiveStringify(node.right, string);
-			}
-				break;
-			case 'list': {
-				string = node.list.map(function (listItem) {
-					return recursiveStringify(listItem, '')
-				}).join('');
-			}
-		}
-		return string;
-	}
-
 	function stringify(ast) {
 		if (typeof ast === 'object') {
-			return recursiveStringify(ast, '');
+			let string = '';
+			switch (ast.type) {
+				case 'compound': {
+					string = ast.list.reduce((acc, item) => {
+						return acc + stringify(item);
+					}, string);
+				}
+					break;
+				case 'attribute':
+				case 'id':
+				case 'class':
+				case 'pseudo-element':
+				case 'pseudo-class':
+				case 'type': {
+					string += ast.content;
+				}
+					break;
+				case 'complex': {
+					string += stringify(ast.left);
+					string += ast.combinator;
+					string += stringify(ast.right);
+				}
+					break;
+				case 'list': {
+					string = ast.list.map(stringify).join(', ');
+				}
+			}
+			return string;
 		}
 		return null;
 	}
