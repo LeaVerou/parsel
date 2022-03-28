@@ -239,7 +239,7 @@ var parsel = (function (exports) {
 			walk(node.left, callback, o, node);
 			walk(node.right, callback, o, node);
 		}
-		else if (node.type === "compound") {
+		else if (node.type === "compound" || node.type === "list") {
 			for (let n of node.list) {
 				walk(n, callback, o, node);
 			}
