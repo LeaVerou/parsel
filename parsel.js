@@ -1,12 +1,12 @@
 export const TOKENS = {
-	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<caseSensitive>[iIsS])?\s*)?\]/gu,
-	id: /#(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
-	class: /\.(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
+	attribute: /\[\s*(?:(\*|[-\w]*)\|)?([-\w\u{0080}-\u{FFFF}]+)\s*(?:(\W?=)\s*(?<value>.+?)\s*([iIsS])?\s*)?\]/gu,
+	id: /#((?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
+	class: /\.((?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
-	"pseudo-element": /::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
-	"pseudo-class": /:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
-	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
+	"pseudo-element": /::([-\w\u{0080}-\u{FFFF}]+)(?:\((¶+)\))?/gu, // this must be before pseudo-class
+	"pseudo-class": /:([-\w\u{0080}-\u{FFFF}]+)(?:\((¶+)\))?/gu,
+	type: /(?:(\*|[-\w]*)\|)?([-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
 };
 
 const TOKENS_WITH_PARENS = new Set(["pseudo-class", "pseudo-element"]);
