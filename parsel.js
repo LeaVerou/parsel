@@ -126,8 +126,7 @@ export function tokenize (selector) {
 
 	// Replace strings with whitespace strings (to preserve offsets)
 	let strings = [];
-	// FIXME Does not account for escaped backslashes before a quote
-	selector = selector.replace(/(['"])(\\\1|.)+?\1/g, (str, quote, content, start) => {
+	selector = selector.replace(/(['"])((?:\\\1|.)+?)\1/g, (str, quote, content, start) => {
 		strings.push({str, start});
 		return quote + "§".repeat(content.length) + quote;
 	});
