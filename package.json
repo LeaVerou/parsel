@@ -12,9 +12,10 @@
       "umd": "./dist/umd/parsel.min.js"
     }
   },
+  "type": "module",
   "scripts": {
     "test": "open test.html",
-    "build": "rollup -c"
+    "build": "npx rollup -c"
   },
   "repository": {
     "type": "git",

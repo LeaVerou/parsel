@@ -1,5 +1,5 @@
 const TOKENS = {
-	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(?<caseSensitive>[iIsS])?\s*)?\]/gu,
+	attribute: /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
 	id: /#(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
 	class: /\.(?<name>(?:[-\w\u{0080}-\u{FFFF}]|\\.)+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
@@ -126,8 +126,7 @@ function tokenize (selector) {
 
 	// Replace strings with whitespace strings (to preserve offsets)
 	let strings = [];
-	// FIXME Does not account for escaped backslashes before a quote
-	selector = selector.replace(/(['"])(\\\1|.)+?\1/g, (str, quote, content, start) => {
+	selector = selector.replace(/(['"])((?:\\\1|.)+?)\1/g, (str, quote, content, start) => {
 		strings.push({str, start});
 		return quote + "§".repeat(content.length) + quote;
 	});
