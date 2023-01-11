@@ -67,7 +67,7 @@ export function tokenize(selector: string): Tokens[];
 /**
  * Traverse all tokens of a (sub)tree:
  */
-export function walk(node: AST, cb: (node: AST, parentNode: AST) => {}): void;
+export function walk(node: AST, cb: (node: AST, parentNode: AST) => void): void;
 
 /**
  * Calculate specificity (returns an array of 3 numbers):
