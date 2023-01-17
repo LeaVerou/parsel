@@ -351,6 +351,10 @@ var parsel = (function (exports) {
 					// Max of argument list
 					let sub = specificity(node.subtree);
 					sub.forEach((s, i) => ret[i] += s);
+					// :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
+					if (node.name === "nth-child" || node.name === "nth-last-child") {
+						ret[1]++;
+					}
 				}
 				else {
 					ret[1]++;
