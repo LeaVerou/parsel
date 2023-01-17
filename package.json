@@ -4,8 +4,10 @@
   "description": "A tiny, permissive CSS selector parser",
   "main": "dist/cjs/parsel.min.js",
   "module": "dist/parsel.min.js",
+  "types": "./index.d.ts",
   "exports": {
     ".": {
+      "types": "./index.d.ts",
       "import": "./dist/parsel.min.js",
       "require": "./dist/cjs/parsel.min.js",
       "browser": "./parsel.js",
