@@ -12,6 +12,7 @@
 		combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
 		"pseudo-element": /::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
 		"pseudo-class": /:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
+		universal: /(?:(?<namespace>\*|[-\w]*)\|)?\*/gu,
 		type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
 	};
 

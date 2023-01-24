@@ -11,6 +11,7 @@ interface Tokens {
 		| "attribute"
 		| "id"
 		| "type"
+		| "universal"
 		| "pseudo-element"
 		| "pseudo-class"
 		| "comma"
