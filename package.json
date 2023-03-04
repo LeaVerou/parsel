@@ -16,7 +16,8 @@
   },
   "type": "module",
   "scripts": {
-    "test": "open test.html",
+    "start": "http-server -o index.html -c-1",
+    "test": "http-server -o test.html -c-1",
     "build": "npx rollup -c"
   },
   "repository": {
@@ -34,6 +35,7 @@
   },
   "homepage": "https://projects.verou.me/parsel",
   "devDependencies": {
+    "http-server": "^14.1.1",
     "rollup": "^2.49.0",
     "rollup-plugin-terser": "^7.0.2"
   }
