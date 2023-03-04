@@ -22,8 +22,9 @@ export const RECURSIVE_PSEUDO_CLASSES_ARGS = {
 RECURSIVE_PSEUDO_CLASSES["nth-last-child"] = RECURSIVE_PSEUDO_CLASSES_ARGS["nth-child"];
 
 const TOKENS_FOR_RESTORE = Object.assign({}, TOKENS);
-TOKENS_FOR_RESTORE["pseudo-element"] = RegExp(TOKENS["pseudo-element"].source.replace("(?<argument>¶+)", "(?<argument>.+?)"), "gu")
-TOKENS_FOR_RESTORE["pseudo-class"] = RegExp(TOKENS["pseudo-class"].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu")
+for (const pseudoType of ["pseudo-element", "pseudo-class"]) {
+	TOKENS_FOR_RESTORE[pseudoType] = RegExp(TOKENS[pseudoType].source.replace("(?<argument>¶+)", "(?<argument>.+)"), "gu");
+}
 
 export function gobbleParens(text, i) {
 	let str = "", stack = [];
