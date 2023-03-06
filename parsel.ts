@@ -365,6 +365,9 @@ export function walk(
  */
 export function* flatten(
   node: AST | undefined,
+  /**
+   * @internal
+   */
   parent?: AST
 ): Generator<[node: AST, parent: AST | undefined]> {
   if (!node) {
@@ -375,7 +378,7 @@ export function* flatten(
     yield* flatten(node.left, node);
     yield* flatten(node.right, node);
   } else if ('list' in node) {
-    for (let child of node.list) {
+    for (const child of node.list) {
       yield* flatten(child, node);
     }
   }
@@ -465,7 +468,7 @@ export function specificity(selector: string | AST): number[] {
     return [];
   }
 
-  if ('list' in ast) {
+  if (ast.type === 'list' && 'list' in ast) {
     let base = 10;
     const specificities = ast.list.map((ast) => {
       const sp = specificity(ast);
@@ -476,37 +479,38 @@ export function specificity(selector: string | AST): number[] {
     return specificities[numbers.indexOf(Math.max(...numbers))];
   }
 
-  let ret = [0, 0, 0];
+  const result = [0, 0, 0];
   for (const [node] of flatten(ast)) {
     switch (node.type) {
       case TokenType.Id:
-        ret[0]++;
+        result[0]++;
         break;
       case TokenType.Class:
       case TokenType.Attribute:
-        ret[1]++;
+        result[1]++;
         break;
+      case TokenType.Type:
       case TokenType.PseudoElement:
-        ret[2]++;
+        result[2]++;
         break;
       case TokenType.PseudoClass:
         if (node.name === 'where') {
           break;
         }
         if (!RECURSIVE_PSEUDO_CLASSES.has(node.name) || !node.subtree) {
-          ret[1]++;
+          result[1]++;
           break;
         }
         for (const [index, sub] of specificity(node.subtree).entries()) {
-          ret[index] += sub;
+          result[index] += sub;
         }
         // :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
         if (node.name === 'nth-child' || node.name === 'nth-last-child') {
-          ret[1]++;
+          result[1]++;
         }
         break;
     }
   }
 
-  return ret;
+  return result;
 }
