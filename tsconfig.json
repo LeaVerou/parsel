@@ -8,6 +8,7 @@
 
     /* Emit */
     "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
+    "noEmitOnError": true /* Disable emitting files if any type checking errors are reported. */,
     "outDir": "./dist" /* Specify an output folder for all emitted files. */,
     "stripInternal": true /* Disable emitting declarations that have '@internal' in their JSDoc comments. */,
 

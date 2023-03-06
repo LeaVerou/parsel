@@ -4,6 +4,22 @@ import typescript from '@rollup/plugin-typescript';
 export default [
   {
     input: 'parsel.ts',
+    output: {
+      name: 'parsel',
+      file: 'public/parsel.js',
+      sourcemap: true,
+      format: 'es'
+    },
+    plugins: [
+      typescript({
+        declaration: false,
+        inlineSources: true,
+        sourceMap: true
+      })
+    ]
+  },
+  {
+    input: 'parsel.ts',
     output: [
       {
         file: 'dist/cjs/parsel.js',
