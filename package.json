@@ -15,6 +15,9 @@
       "umd": "./dist/umd/parsel.min.js"
     }
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "start": "http-server -o index.html -c-1",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
@@ -39,6 +42,8 @@
     "@jest/globals": "^29.4.3",
     "@rollup/plugin-typescript": "^11.0.0",
     "cross-env": "^7.0.3",
+    "eslint": "^7.32.0",
+    "gts": "^3.1.1",
     "http-server": "^14.1.1",
     "jest": "^29.4.3",
     "rollup": "^2.49.0",

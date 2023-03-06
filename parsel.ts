@@ -7,7 +7,7 @@ export const enum TokenType {
   PseudoElement = 'pseudo-element',
   PseudoClass = 'pseudo-class',
   Comma = 'comma',
-  Combinator = 'combinator'
+  Combinator = 'combinator',
 }
 
 export interface Tokens {
@@ -59,12 +59,12 @@ export const TOKENS: Record<string, RegExp> = {
     /:(?<name>(?:\\.|[-\w\P{ASCII}])+)(?:\((?<argument>¶+)\))?/gu,
   [TokenType.Universal]: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?\*/gu,
   [TokenType.Type]:
-    /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu // this must be last
+    /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu, // this must be last
 };
 
 export const TOKENS_TO_TRIM = new Set<string>([
   TokenType.Combinator,
-  TokenType.Comma
+  TokenType.Comma,
 ]);
 
 export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
@@ -76,13 +76,13 @@ export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
   '-moz-any',
   '-webkit-any',
   'nth-child',
-  'nth-last-child'
+  'nth-last-child',
 ]);
 
 const nthChildRegExp = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/;
 export const RECURSIVE_PSEUDO_CLASSES_ARGS: Record<string, RegExp> = {
   'nth-child': nthChildRegExp,
-  'nth-last-child': nthChildRegExp
+  'nth-last-child': nthChildRegExp,
 };
 
 const getTokensForRestore = (type: string) => {
@@ -130,7 +130,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
       args.push({
         ...(match.groups as unknown as Tokens),
         type,
-        content
+        content,
       });
 
       const after = token.slice(from + content.length + 1);
@@ -163,7 +163,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
 }
 
 export function tokenize(selector: string, grammar = TOKENS) {
-  type TokenString = { value: string; offset: number };
+  type TokenString = {value: string; offset: number};
 
   if (!selector) {
     return null;
@@ -179,7 +179,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
     const state: {
       escaped: boolean;
       quoteState?: [quoteType: string, offset: number];
-    } = { escaped: false };
+    } = {escaped: false};
     for (let i = 0; i < selector.length; ++i) {
       if (state.escaped) {
         continue;
@@ -189,7 +189,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
           state.escaped = true;
           break;
         case '"':
-        case "'":
+        case "'": {
           if (!state.quoteState) {
             state.quoteState = [selector[i], i];
             continue;
@@ -200,13 +200,14 @@ export function tokenize(selector: string, grammar = TOKENS) {
           }
           const offset = state.quoteState[1];
           const value = selector.slice(state.quoteState[1], i + 1);
-          replacements.push({ value, offset });
+          replacements.push({value, offset});
           const replacement = `${quote}${'§'.repeat(value.length - 2)}${quote}`;
           selector =
             selector.slice(0, offset) +
             replacement +
             selector.slice(offset + value.length);
           break;
+        }
       }
     }
   }
@@ -217,7 +218,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
       escaped: boolean;
       nesting: number;
       offset: number;
-    } = { escaped: false, nesting: 0, offset: 0 };
+    } = {escaped: false, nesting: 0, offset: 0};
     for (let i = 0; i < selector.length; ++i) {
       if (state.escaped) {
         continue;
@@ -232,19 +233,20 @@ export function tokenize(selector: string, grammar = TOKENS) {
           }
           state.offset = i;
           break;
-        case ')':
+        case ')': {
           if (--state.nesting !== 0) {
             continue;
           }
-          const { offset } = state;
+          const {offset} = state;
           const value = selector.slice(offset, i + 1);
-          replacements.push({ value, offset });
+          replacements.push({value, offset});
           const replacement = `(${'¶'.repeat(value.length - 2)})`;
           selector =
             selector.slice(0, offset) +
             replacement +
             selector.slice(offset + value.length);
           break;
+        }
       }
     }
   }
@@ -255,7 +257,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
   // Restore replacements in reverse order.
   for (const replacement of replacements.reverse()) {
     for (const token of tokens) {
-      const { offset, value } = replacement;
+      const {offset, value} = replacement;
       if (!(token.pos[0] <= offset && offset + value.length <= token.pos[1])) {
         continue;
       }
@@ -296,7 +298,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
 function nestTokens(tokens: Tokens[]): AST {
   {
     const list: AST[] = [];
-    const { length } = tokens;
+    const {length} = tokens;
     let offset = 0;
     for (let limit = offset; limit !== length; ++limit) {
       const token = tokens[limit];
@@ -308,7 +310,7 @@ function nestTokens(tokens: Tokens[]): AST {
     }
     if (list.length !== 0) {
       list.push(nestTokens(tokens.slice(offset)));
-      return { type: 'list', list };
+      return {type: 'list', list};
     }
   }
 
@@ -324,7 +326,7 @@ function nestTokens(tokens: Tokens[]): AST {
       type: 'complex',
       combinator: token.content,
       left: nestTokens(left),
-      right: nestTokens(right)
+      right: nestTokens(right),
     };
   }
 
@@ -337,7 +339,7 @@ function nestTokens(tokens: Tokens[]): AST {
     default:
       return {
         type: 'compound',
-        list: [...tokens] // clone to avoid pointers messing up the AST
+        list: [...tokens], // clone to avoid pointers messing up the AST
       };
   }
 }
@@ -403,7 +405,7 @@ export interface ParserOptions {
  */
 export function parse(
   selector: string,
-  { recursive = true }: ParserOptions = {}
+  {recursive = true}: ParserOptions = {}
 ): AST | undefined {
   const tokens = tokenize(selector);
   if (!tokens) {
@@ -435,7 +437,7 @@ export function parse(
     }
     if (argument) {
       Object.assign(node, {
-        subtree: parse(argument, { recursive })
+        subtree: parse(argument, {recursive}),
       });
     }
   }
@@ -462,7 +464,7 @@ export function specificityToNumber(
 export function specificity(selector: string | AST): number[] {
   let ast: string | AST | undefined = selector;
   if (typeof ast === 'string') {
-    ast = parse(ast, { recursive: true });
+    ast = parse(ast, {recursive: true});
   }
   if (!ast) {
     return [];
@@ -470,12 +472,12 @@ export function specificity(selector: string | AST): number[] {
 
   if (ast.type === 'list' && 'list' in ast) {
     let base = 10;
-    const specificities = ast.list.map((ast) => {
+    const specificities = ast.list.map(ast => {
       const sp = specificity(ast);
       base = Math.max(base, ...specificity(ast));
       return sp;
     });
-    const numbers = specificities.map((ast) => specificityToNumber(ast, base));
+    const numbers = specificities.map(ast => specificityToNumber(ast, base));
     return specificities[numbers.indexOf(Math.max(...numbers))];
   }
 

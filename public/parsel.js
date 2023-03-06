@@ -19,11 +19,11 @@ const TOKENS = {
     [TokenType.PseudoElement]: /::(?<name>(?:\\.|[-\w\P{ASCII}])+)(?:\((?<argument>¶+)\))?/gu,
     [TokenType.PseudoClass]: /:(?<name>(?:\\.|[-\w\P{ASCII}])+)(?:\((?<argument>¶+)\))?/gu,
     [TokenType.Universal]: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?\*/gu,
-    [TokenType.Type]: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu // this must be last
+    [TokenType.Type]: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu, // this must be last
 };
 const TOKENS_TO_TRIM = new Set([
     TokenType.Combinator,
-    TokenType.Comma
+    TokenType.Comma,
 ]);
 const RECURSIVE_PSEUDO_CLASSES = new Set([
     'not',
@@ -34,12 +34,12 @@ const RECURSIVE_PSEUDO_CLASSES = new Set([
     '-moz-any',
     '-webkit-any',
     'nth-child',
-    'nth-last-child'
+    'nth-last-child',
 ]);
 const nthChildRegExp = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/;
 const RECURSIVE_PSEUDO_CLASSES_ARGS = {
     'nth-child': nthChildRegExp,
-    'nth-last-child': nthChildRegExp
+    'nth-last-child': nthChildRegExp,
 };
 const getTokensForRestore = (type) => {
     switch (type) {
@@ -77,7 +77,7 @@ function tokenizeBy(text, grammar = TOKENS) {
             args.push({
                 ...match.groups,
                 type,
-                content
+                content,
             });
             const after = token.slice(from + content.length + 1);
             if (after) {
@@ -242,7 +242,7 @@ function nestTokens(tokens) {
             type: 'complex',
             combinator: token.content,
             left: nestTokens(left),
-            right: nestTokens(right)
+            right: nestTokens(right),
         };
     }
     switch (tokens.length) {
@@ -254,7 +254,7 @@ function nestTokens(tokens) {
         default:
             return {
                 type: 'compound',
-                list: [...tokens] // clone to avoid pointers messing up the AST
+                list: [...tokens], // clone to avoid pointers messing up the AST
             };
     }
 }
@@ -328,7 +328,7 @@ function parse(selector, { recursive = true } = {}) {
         }
         if (argument) {
             Object.assign(node, {
-                subtree: parse(argument, { recursive })
+                subtree: parse(argument, { recursive }),
             });
         }
     }
@@ -356,12 +356,12 @@ function specificity(selector) {
     }
     if (ast.type === 'list' && 'list' in ast) {
         let base = 10;
-        const specificities = ast.list.map((ast) => {
+        const specificities = ast.list.map(ast => {
             const sp = specificity(ast);
             base = Math.max(base, ...specificity(ast));
             return sp;
         });
-        const numbers = specificities.map((ast) => specificityToNumber(ast, base));
+        const numbers = specificities.map(ast => specificityToNumber(ast, base));
         return specificities[numbers.indexOf(Math.max(...numbers))];
     }
     const result = [0, 0, 0];

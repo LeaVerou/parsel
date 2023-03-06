@@ -1,4 +1,4 @@
-import { terser } from 'rollup-plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import typescript from '@rollup/plugin-typescript';
 
 export default [
@@ -7,9 +7,9 @@ export default [
     output: {
       file: 'public/parsel.js',
       sourcemap: true,
-      format: 'es'
+      format: 'es',
     },
-    plugins: [typescript({ declaration: false, outputToFilesystem: true })]
+    plugins: [typescript({declaration: false, outputToFilesystem: true})],
   },
   {
     input: 'parsel.ts',
@@ -17,51 +17,51 @@ export default [
       {
         file: 'dist/cjs/parsel.js',
         sourcemap: true,
-        format: 'cjs'
+        format: 'cjs',
       },
       {
         name: 'parsel',
         file: 'dist/nomodule/parsel.js',
         sourcemap: true,
-        format: 'iife'
+        format: 'iife',
       },
       {
         name: 'parsel',
         file: 'dist/umd/parsel.js',
         sourcemap: true,
-        format: 'umd'
+        format: 'umd',
       },
       {
         file: 'dist/parsel.js',
         sourcemap: true,
-        format: 'es'
-      }
+        format: 'es',
+      },
     ].concat(
       [
         {
           file: 'dist/cjs/parsel.min.js',
           sourcemap: true,
-          format: 'cjs'
+          format: 'cjs',
         },
         {
           name: 'parsel',
           file: 'dist/nomodule/parsel.min.js',
           sourcemap: true,
-          format: 'iife'
+          format: 'iife',
         },
         {
           name: 'parsel',
           file: 'dist/umd/parsel.min.js',
           sourcemap: true,
-          format: 'umd'
+          format: 'umd',
         },
         {
           file: 'dist/parsel.min.js',
           sourcemap: true,
-          format: 'es'
-        }
-      ].map((output) => Object.assign(output, { plugins: [terser()] }))
+          format: 'es',
+        },
+      ].map(output => Object.assign(output, {plugins: [terser()]}))
     ),
-    plugins: [typescript({ outputToFilesystem: true })]
-  }
+    plugins: [typescript({outputToFilesystem: true})],
+  },
 ];

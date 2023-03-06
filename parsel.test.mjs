@@ -1,5 +1,5 @@
-import { describe, expect, it } from '@jest/globals';
-import { parse, specificity, tokenize } from './dist/parsel.js';
+import {describe, expect, it} from '@jest/globals';
+import {parse, specificity, tokenize} from './dist/parsel.js';
 
 describe('Token', () => {
   it('should work', () => {
@@ -146,9 +146,8 @@ describe('AST', () => {
 
 describe('Specificity', () => {
   it('should work', () => {
-    expect(
-specificity('div:nth-child(2n+1 of #someId.someClass)')).
-toMatchInlineSnapshot(`
+    expect(specificity('div:nth-child(2n+1 of #someId.someClass)'))
+      .toMatchInlineSnapshot(`
 [
   1,
   2,
