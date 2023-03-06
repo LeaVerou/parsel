@@ -10,34 +10,32 @@ export default [
       sourcemap: true,
       format: 'es'
     },
-    plugins: [
-      typescript({
-        declaration: false,
-        inlineSources: true,
-        sourceMap: true
-      })
-    ]
+    plugins: [typescript({ declaration: false })]
   },
   {
     input: 'parsel.ts',
     output: [
       {
         file: 'dist/cjs/parsel.js',
+        sourcemap: true,
         format: 'cjs'
       },
       {
         name: 'parsel',
         file: 'dist/nomodule/parsel.js',
+        sourcemap: true,
         format: 'iife'
       },
       {
         name: 'parsel',
         file: 'dist/umd/parsel.js',
+        sourcemap: true,
         format: 'umd'
       },
       {
         name: 'parsel',
         file: 'dist/parsel.js',
+        sourcemap: true,
         format: 'es'
       }
     ],
@@ -48,21 +46,25 @@ export default [
     output: [
       {
         file: 'dist/cjs/parsel.min.js',
+        sourcemap: true,
         format: 'cjs'
       },
       {
         name: 'parsel',
         file: 'dist/nomodule/parsel.min.js',
+        sourcemap: true,
         format: 'iife'
       },
       {
         name: 'parsel',
         file: 'dist/umd/parsel.min.js',
+        sourcemap: true,
         format: 'umd'
       },
       {
         name: 'parsel',
         file: 'dist/parsel.min.js',
+        sourcemap: true,
         format: 'es'
       }
     ],
