@@ -162,11 +162,11 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
   return tokens as Tokens[];
 }
 
-export function tokenize(selector: string, grammar = TOKENS) {
+export function tokenize(selector: string, grammar = TOKENS): Tokens[] {
   type TokenString = {value: string; offset: number};
 
   if (!selector) {
-    return null;
+    return [];
   }
 
   // Prevent leading/trailing whitespace be interpreted as combinators
@@ -406,12 +406,8 @@ export interface ParserOptions {
 export function parse(
   selector: string,
   {recursive = true}: ParserOptions = {}
-): AST | undefined {
+): AST {
   const tokens = tokenize(selector);
-  if (!tokens) {
-    return;
-  }
-
   const ast = nestTokens(tokens);
   if (!recursive) {
     return ast;

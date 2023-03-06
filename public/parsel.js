@@ -104,7 +104,7 @@ function tokenizeBy(text, grammar = TOKENS) {
 }
 function tokenize(selector, grammar = TOKENS) {
     if (!selector) {
-        return null;
+        return [];
     }
     // Prevent leading/trailing whitespace be interpreted as combinators
     selector = selector.trim();
@@ -121,7 +121,7 @@ function tokenize(selector, grammar = TOKENS) {
                     state.escaped = true;
                     break;
                 case '"':
-                case "'":
+                case "'": {
                     if (!state.quoteState) {
                         state.quoteState = [selector[i], i];
                         continue;
@@ -139,6 +139,7 @@ function tokenize(selector, grammar = TOKENS) {
                             replacement +
                             selector.slice(offset + value.length);
                     break;
+                }
             }
         }
     }
@@ -159,7 +160,7 @@ function tokenize(selector, grammar = TOKENS) {
                     }
                     state.offset = i;
                     break;
-                case ')':
+                case ')': {
                     if (--state.nesting !== 0) {
                         continue;
                     }
@@ -172,6 +173,7 @@ function tokenize(selector, grammar = TOKENS) {
                             replacement +
                             selector.slice(offset + value.length);
                     break;
+                }
             }
         }
     }
@@ -302,9 +304,6 @@ parent) {
  */
 function parse(selector, { recursive = true } = {}) {
     const tokens = tokenize(selector);
-    if (!tokens) {
-        return;
-    }
     const ast = nestTokens(tokens);
     if (!recursive) {
         return ast;
