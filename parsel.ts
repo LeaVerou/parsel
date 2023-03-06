@@ -48,18 +48,18 @@ export type AST = Complex | Compound | List | Tokens;
 
 export const TOKENS: Record<string, RegExp> = {
   [TokenType.Attribute]:
-    /\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
-  [TokenType.Id]: /#(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
-  [TokenType.Class]: /\.(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
+    /\[\s*(?:(?<namespace>(?:\\.|[-\w\P{ASCII}])+|\*)?\|)?(?<name>(?:\\.|[-\w\P{ASCII}])+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
+  [TokenType.Id]: /#(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
+  [TokenType.Class]: /\.(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
   [TokenType.Comma]: /\s*,\s*/g, // must be before combinator
   [TokenType.Combinator]: /\s*[\s>+~]\s*/g, // this must be after attribute
   [TokenType.PseudoElement]:
-    /::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
+    /::(?<name>(?:\\.|[-\w\P{ASCII}])+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
   [TokenType.PseudoClass]:
-    /:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
-  [TokenType.Universal]: /(?:(?<namespace>\*|[-\w]*)\|)?\*/gu,
+    /:(?<name>(?:\\.|[-\w\P{ASCII}])+)(?:\((?<argument>¶+)\))?/gu,
+  [TokenType.Universal]: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?\*/gu,
   [TokenType.Type]:
-    /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
+    /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu // this must be last
 };
 
 export const TOKENS_TO_TRIM = new Set<string>([
@@ -476,26 +476,32 @@ export function specificity(selector: string | AST): number[] {
 
   let ret = [0, 0, 0];
   for (const [node] of flatten(ast)) {
-    if (node.type === 'id') {
-      ret[0]++;
-    } else if (node.type === 'class' || node.type === 'attribute') {
-      ret[1]++;
-    } else if (
-      (node.type === 'type' && node.content !== '*') ||
-      node.type === 'pseudo-element'
-    ) {
-      ret[2]++;
-    } else if (node.type === 'pseudo-class' && node.name !== 'where') {
-      if (RECURSIVE_PSEUDO_CLASSES.has(node.name) && node.subtree) {
-        const sub = specificity(node.subtree);
-        sub.forEach((s, i) => (ret[i] += s));
-        // :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
-        if (node.name === 'nth-child' || node.name === 'nth-last-child') {
+    switch (node.type) {
+      case TokenType.Id:
+        ret[0]++;
+        break;
+      case TokenType.Class:
+      case TokenType.Attribute:
+        ret[1]++;
+        break;
+      case TokenType.PseudoElement:
+        ret[2]++;
+        break;
+      case TokenType.PseudoClass:
+        if (node.name === 'where') {
+          continue;
+        }
+        if (RECURSIVE_PSEUDO_CLASSES.has(node.name) && node.subtree) {
+          const sub = specificity(node.subtree);
+          sub.forEach((s, i) => (ret[i] += s));
+          // :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
+          if (node.name === 'nth-child' || node.name === 'nth-last-child') {
+            ret[1]++;
+          }
+        } else {
           ret[1]++;
         }
-      } else {
-        ret[1]++;
-      }
+        break;
     }
   }
 
