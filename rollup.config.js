@@ -5,12 +5,11 @@ export default [
   {
     input: 'parsel.ts',
     output: {
-      name: 'parsel',
       file: 'public/parsel.js',
       sourcemap: true,
       format: 'es'
     },
-    plugins: [typescript({ declaration: false })]
+    plugins: [typescript({ declaration: false, outputToFilesystem: true })]
   },
   {
     input: 'parsel.ts',
@@ -33,41 +32,36 @@ export default [
         format: 'umd'
       },
       {
-        name: 'parsel',
         file: 'dist/parsel.js',
         sourcemap: true,
         format: 'es'
       }
-    ],
-    plugins: [typescript()]
-  },
-  {
-    input: 'parsel.ts',
-    output: [
-      {
-        file: 'dist/cjs/parsel.min.js',
-        sourcemap: true,
-        format: 'cjs'
-      },
-      {
-        name: 'parsel',
-        file: 'dist/nomodule/parsel.min.js',
-        sourcemap: true,
-        format: 'iife'
-      },
-      {
-        name: 'parsel',
-        file: 'dist/umd/parsel.min.js',
-        sourcemap: true,
-        format: 'umd'
-      },
-      {
-        name: 'parsel',
-        file: 'dist/parsel.min.js',
-        sourcemap: true,
-        format: 'es'
-      }
-    ],
-    plugins: [typescript(), terser()]
+    ].concat(
+      [
+        {
+          file: 'dist/cjs/parsel.min.js',
+          sourcemap: true,
+          format: 'cjs'
+        },
+        {
+          name: 'parsel',
+          file: 'dist/nomodule/parsel.min.js',
+          sourcemap: true,
+          format: 'iife'
+        },
+        {
+          name: 'parsel',
+          file: 'dist/umd/parsel.min.js',
+          sourcemap: true,
+          format: 'umd'
+        },
+        {
+          file: 'dist/parsel.min.js',
+          sourcemap: true,
+          format: 'es'
+        }
+      ].map((output) => Object.assign(output, { plugins: [terser()] }))
+    ),
+    plugins: [typescript({ outputToFilesystem: true })]
   }
 ];

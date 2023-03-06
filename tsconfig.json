@@ -7,6 +7,7 @@
     "moduleResolution": "nodenext" /* Specify how TypeScript looks up a file from a given module specifier. */,
 
     /* Emit */
+    "incremental": true /* Enable incremental compilation. */,
     "declaration": true /* Generate .d.ts files from TypeScript and JavaScript files in your project. */,
     "noEmitOnError": true /* Disable emitting files if any type checking errors are reported. */,
     "inlineSources": true /* Include source code in the sourcemaps inside the emitted JavaScript. */,
