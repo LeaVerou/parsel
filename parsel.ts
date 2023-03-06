@@ -413,25 +413,27 @@ export function parse(
   }
 
   for (const [node] of flatten(ast)) {
-    if (node.type === TokenType.PseudoClass && node.argument) {
-      if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
-        let argument = node.argument;
-        const childArg = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
-        if (childArg) {
-          const match = childArg.exec(argument);
-          if (!match) {
-            continue;
-          }
-
-          Object.assign(node, match.groups);
-          argument = match.groups!['subtree'];
-        }
-        if (argument) {
-          Object.assign(node, {
-            subtree: parse(argument, { recursive })
-          });
-        }
+    if (node.type !== TokenType.PseudoClass || !node.argument) {
+      continue;
+    }
+    if (!RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
+      continue;
+    }
+    let argument = node.argument;
+    const pattern = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
+    if (pattern) {
+      const match = pattern.exec(argument);
+      if (!match) {
+        continue;
       }
+
+      Object.assign(node, match.groups);
+      argument = match.groups!['subtree'];
+    }
+    if (argument) {
+      Object.assign(node, {
+        subtree: parse(argument, { recursive })
+      });
     }
   }
 
@@ -489,16 +491,17 @@ export function specificity(selector: string | AST): number[] {
         break;
       case TokenType.PseudoClass:
         if (node.name === 'where') {
-          continue;
+          break;
         }
-        if (RECURSIVE_PSEUDO_CLASSES.has(node.name) && node.subtree) {
-          const sub = specificity(node.subtree);
-          sub.forEach((s, i) => (ret[i] += s));
-          // :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
-          if (node.name === 'nth-child' || node.name === 'nth-last-child') {
-            ret[1]++;
-          }
-        } else {
+        if (!RECURSIVE_PSEUDO_CLASSES.has(node.name) || !node.subtree) {
+          ret[1]++;
+          break;
+        }
+        for (const [index, sub] of specificity(node.subtree).entries()) {
+          ret[index] += sub;
+        }
+        // :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
+        if (node.name === 'nth-child' || node.name === 'nth-last-child') {
           ret[1]++;
         }
         break;
