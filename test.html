@@ -21,7 +21,17 @@
 	<table class="reftest" data-test="testTokenize" data-columns="3">
 		<tr>
 			<td>#foo</td>
-			<td>[{"type":"id", "content":"#foo", "name":"foo", "pos":[0,4]}]</td>
+			<td>[
+				{
+					"name": "foo",
+					"type": "id",
+					"content": "#foo",
+					"pos": [
+						0,
+						4
+					]
+				}
+			]</td>
 		</tr>
 	</table>
 </section>
@@ -32,7 +42,15 @@
 	<table class="reftest" data-test="testAST" data-columns="3">
 		<tr>
 			<td>#foo</td>
-			<td>{"type":"id", "content":"#foo", "name":"foo", "pos":[0,4]}</td>
+			<td>{
+				"name": "foo",
+				"type": "id",
+				"content": "#foo",
+				"pos": [
+					0,
+					4
+				]
+			}</td>
 		</tr>
 	</table>
 
@@ -46,7 +64,15 @@
 	<table class="reftest" data-test="testAST" data-columns="3">
 		<tr>
 			<td>html|*</td>
-			<td>{"type":"universal", "content":"html|*", "namespace": "html", "pos":[0,6]}</td>
+			<td>{
+				"namespace": "html",
+				"type": "universal",
+				"content": "html|*",
+				"pos": [
+					0,
+					6
+				]
+			}</td>
 		</tr>
 	</table>
 
@@ -54,60 +80,60 @@
 		<tr>
 			<td>div:nth-child(2n+1 of #someId.someClass)</td>
 			<td>{
-	"ast": {
-		"type": "compound",
-		"list": [
-			{
-				"type": "type",
-				"content": "div",
-				"name": "div",
-				"pos": [
-					0,
-					3
-				]
-			},
-			{
-				"type": "pseudo-class",
-				"content": ":nth-child(2n+1 of #someId.someClass)",
-				"name": "nth-child",
-				"argument": "2n+1 of #someId.someClass",
-				"pos": [
-					3,
-					40
-				],
-				"index": "2n+1",
-				"subtree": {
+				"ast": {
 					"type": "compound",
 					"list": [
 						{
-							"type": "id",
-							"content": "#someId",
-							"name": "someId",
+							"name": "div",
+							"type": "type",
+							"content": "div",
 							"pos": [
 								0,
-								7
+								3
 							]
 						},
 						{
-							"type": "class",
-							"content": ".someClass",
-							"name": "someClass",
+							"name": "nth-child",
+							"argument": "2n+1 of #someId.someClass",
+							"type": "pseudo-class",
+							"content": ":nth-child(2n+1 of #someId.someClass)",
 							"pos": [
-								7,
-								17
-							]
+								3,
+								40
+							],
+							"index": "2n+1",
+							"subtree": {
+								"type": "compound",
+								"list": [
+									{
+										"name": "someId",
+										"type": "id",
+										"content": "#someId",
+										"pos": [
+											0,
+											7
+										]
+									},
+									{
+										"name": "someClass",
+										"type": "class",
+										"content": ".someClass",
+										"pos": [
+											7,
+											17
+										]
+									}
+								]
+							}
 						}
 					]
-				}
-			}
-		]
-	},
-	"specificity": [
-		1,
-		2,
-		1
-	]
-}</td>
+				},
+				"specificity": [
+					1,
+					2,
+					1
+				]
+			}</td>
 		</tr>
 	</table>
 </section>
@@ -115,7 +141,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/blissfuljs/1.0.4/bliss.min.js"></script>
 <script src="https://test.mavo.io/test.js"></script>
 <script type="module">
-import * as parsel from "./parsel.js";
+import * as parsel from "./dist/parsel.js";
 
 window.testTokenize = function(test, result, expected) {
 	console.log(arguments)
