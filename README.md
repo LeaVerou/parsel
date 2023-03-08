@@ -1,4 +1,4 @@
 # 🐍 Parsel
 ## A tiny, permissive selector parser & specificity calculator  
 
-For usage instructions etc, please visit https://projects.verou.me/parsel 
+For usage instructions etc, please visit https://parsel.verou.me/ 
