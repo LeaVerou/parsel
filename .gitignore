@@ -1,2 +1,5 @@
 /node_modules
 /dist
+tsconfig.tsbuildinfo
+/.rollup.cache
+/dist/*/*.d.ts
