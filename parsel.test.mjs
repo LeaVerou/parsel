@@ -21,6 +21,102 @@ describe('`tokenize`', () => {
   it('should work with empty selectors', () => {
     expect(tokenize('')).toMatchObject([]);
   });
+
+  it('should work with multiple strings', () => {
+    expect(tokenize('[data-test-id^="test-"]:not([data-test-id^="test-foo"])'))
+      .toMatchInlineSnapshot(`
+      [
+        {
+          "caseSensitive": undefined,
+          "content": "[data-test-id^="test-"]",
+          "name": "data-test-id",
+          "namespace": undefined,
+          "operator": "^=",
+          "pos": [
+            0,
+            23,
+          ],
+          "type": "attribute",
+          "value": ""test-"",
+        },
+        {
+          "argument": "[data-test-id^="test-foo"]",
+          "content": ":not([data-test-id^="test-foo"])",
+          "name": "not",
+          "pos": [
+            23,
+            55,
+          ],
+          "type": "pseudo-class",
+        },
+      ]
+    `);
+  });
+
+  it('should work with multiple parentheses', () => {
+    expect(
+      tokenize(
+        '[data-test-id^="test-"]:not([data-test-id^="test-foo"]) [data-test-id^="test-"]:not([data-test-id^="test-foo"])'
+      )
+    ).toMatchInlineSnapshot(`
+      [
+        {
+          "caseSensitive": undefined,
+          "content": "[data-test-id^="test-"]",
+          "name": "data-test-id",
+          "namespace": undefined,
+          "operator": "^=",
+          "pos": [
+            0,
+            23,
+          ],
+          "type": "attribute",
+          "value": ""test-"",
+        },
+        {
+          "argument": "[data-test-id^="test-foo"]",
+          "content": ":not([data-test-id^="test-foo"])",
+          "name": "not",
+          "pos": [
+            23,
+            55,
+          ],
+          "type": "pseudo-class",
+        },
+        {
+          "content": " ",
+          "pos": [
+            55,
+            56,
+          ],
+          "type": "combinator",
+        },
+        {
+          "caseSensitive": undefined,
+          "content": "[data-test-id^="test-"]",
+          "name": "data-test-id",
+          "namespace": undefined,
+          "operator": "^=",
+          "pos": [
+            56,
+            79,
+          ],
+          "type": "attribute",
+          "value": ""test-"",
+        },
+        {
+          "argument": "[data-test-id^="test-foo"]",
+          "content": ":not([data-test-id^="test-foo"])",
+          "name": "not",
+          "pos": [
+            79,
+            111,
+          ],
+          "type": "pseudo-class",
+        },
+      ]
+    `);
+  });
 });
 
 describe('`parse`', () => {

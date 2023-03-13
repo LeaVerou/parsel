@@ -178,8 +178,9 @@ export function tokenize(selector: string, grammar = TOKENS): Tokens[] {
   {
     const state: {
       escaped: boolean;
-      quoteState?: [quoteType: string, offset: number];
-    } = {escaped: false};
+      quoted?: string;
+      offset: number;
+    } = {escaped: false, offset: 0};
     for (let i = 0; i < selector.length; ++i) {
       if (state.escaped) {
         continue;
@@ -190,16 +191,18 @@ export function tokenize(selector: string, grammar = TOKENS): Tokens[] {
           break;
         case '"':
         case "'": {
-          if (!state.quoteState) {
-            state.quoteState = [selector[i], i];
+          if (!state.quoted) {
+            state.quoted = selector[i];
+            state.offset = i;
             continue;
           }
-          const quote = state.quoteState[0];
+          const quote = state.quoted;
           if (quote !== selector[i]) {
             continue;
           }
-          const offset = state.quoteState[1];
-          const value = selector.slice(state.quoteState[1], i + 1);
+          delete state.quoted;
+          const offset = state.offset;
+          const value = selector.slice(state.offset, i + 1);
           replacements.push({value, offset});
           const replacement = `${quote}${'§'.repeat(value.length - 2)}${quote}`;
           selector =
