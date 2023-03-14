@@ -70,12 +70,12 @@ export function gobbleParens(text: string, offset: number): string {
 	throw new Error(`Mismatched parenthesis starting at offset ${offset}`);
 }
 
-export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
+export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 	if (!text) {
 		return [];
 	}
 
-	const tokens: (Tokens | string)[] = [text];
+	const tokens: (Token | string)[] = [text];
 	for (const type in grammar) {
 		const pattern = grammar[type];
 		for (let i = 0; i < tokens.length; i++) {
@@ -91,7 +91,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
 			}
 
 			const from = match.index - 1;
-			const args: (Tokens | string)[] = [];
+			const args: (Token | string)[] = [];
 			const content = match[0];
 
 			const before = token.slice(0, from + 1);
@@ -100,7 +100,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
 			}
 
 			args.push({
-				...(match.groups as unknown as Tokens),
+				...(match.groups as unknown as Token),
 				type,
 				content,
 			});
@@ -131,7 +131,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
 		}
 	}
 
-	return tokens as Tokens[];
+	return tokens as Token[];
 }
 
 export function tokenize(selector: string, grammar = TOKENS) {
@@ -281,7 +281,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
 /**
  *  Convert a flat list of tokens into a tree of complex & compound selectors
  */
-function nestTokens(tokens: Tokens[], { list = true } = {}): AST {
+function nestTokens(tokens: Token[], { list = true } = {}): AST {
 	if (list && tokens.find((t: { type: string }) => t.type === 'comma')) {
 		const selectors: AST[] = [];
 		const temp = [];
@@ -492,7 +492,7 @@ export function specificity(selector: string | AST): number[] {
 	return ret;
 }
 
-export interface Tokens {
+export interface Token {
 	type: string;
 	content: string;
 	name: string;
@@ -518,7 +518,7 @@ export interface Complex {
 
 export interface Compound {
 	type: 'compound';
-	list: Tokens[];
+	list: Token[];
 }
 
 export interface List {
@@ -526,4 +526,4 @@ export interface List {
 	list: AST[];
 }
 
-export type AST = Complex | Compound | List | Tokens;
+export type AST = Complex | Compound | List | Token;
