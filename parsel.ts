@@ -67,7 +67,7 @@ export function gobbleParens(text: string, offset: number): string {
 	throw new Error(`Mismatched parenthesis starting at offset ${offset}`);
 }
 
-export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
+function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 	if (!text) {
 		return [];
 	}
