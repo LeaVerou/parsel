@@ -10,7 +10,7 @@ export const TOKENS: Record<string, RegExp> = {
 	'pseudo-class':
 		/:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w]*)\|)?\*/gu,
-	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu, // this must be last
+	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu, // this must be last
 };
 
 const TOKENS_WITH_PARENS = new Set<string>(['pseudo-class', 'pseudo-element']);
