@@ -1,16 +1,16 @@
 export const TOKENS: Record<string, RegExp> = {
 	attribute:
-		/\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
-	id: /#(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
-	class: /\.(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
+		/\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
+	id: /#(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
+	class: /\.(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
 	'pseudo-element':
-		/::(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
+		/::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
 	'pseudo-class':
-		/:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
+		/:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w]*)\|)?\*/gu,
-	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)/gu, // this must be last
+	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
 };
 
 const TOKENS_WITH_PARENS = new Set<string>(['pseudo-class', 'pseudo-element']);
