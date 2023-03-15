@@ -34,7 +34,7 @@
   "bugs": {
     "url": "https://github.com/LeaVerou/parsel/issues"
   },
-  "homepage": "https://projects.verou.me/parsel",
+  "homepage": "https://parsel.verou.me/",
   "devDependencies": {
     "@rollup/plugin-typescript": "^11.0.0",
     "http-server": "^14.1.1",
