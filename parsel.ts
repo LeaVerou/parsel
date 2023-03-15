@@ -5,10 +5,8 @@ export const TOKENS: Record<string, RegExp> = {
 	class: /\.(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
-	'pseudo-element':
-		/::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
-	'pseudo-class':
-		/:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
+	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
+	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
 	universal: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?\*/gu,
 	type: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
 };
@@ -46,7 +44,7 @@ for (const pseudoType of ['pseudo-element', 'pseudo-class'] as const) {
 	);
 }
 
-export function gobbleParens(text: string, offset: number): string {
+function gobbleParens(text: string, offset: number): string {
 	let nesting = 0;
 	let result = '';
 	for (; offset < text.length; offset++) {
@@ -67,7 +65,7 @@ export function gobbleParens(text: string, offset: number): string {
 	throw new Error(`Mismatched parenthesis starting at offset ${offset}`);
 }
 
-export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
+function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 	if (!text) {
 		return [];
 	}
