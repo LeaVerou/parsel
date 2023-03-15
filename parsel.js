@@ -1,19 +1,14 @@
 const TOKENS = {
-    attribute: /\[\s*(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
-    id: /#(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
-    class: /\.(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
+    attribute: /\[\s*(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
+    id: /#(?<name>[-\w\P{ASCII}]+)/gu,
+    class: /\.(?<name>[-\w\P{ASCII}]+)/gu,
     comma: /\s*,\s*/g,
     combinator: /\s*[\s>+~]\s*/g,
     'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
     'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
-    universal: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?\*/gu,
-    type: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
+    universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
+    type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
 };
-const TOKENS_WITH_PARENS = new Set(['pseudo-class', 'pseudo-element']);
-const TOKENS_WITH_STRINGS = new Set([
-    ...TOKENS_WITH_PARENS,
-    'attribute',
-]);
 const TRIM_TOKENS = new Set(['combinator', 'comma']);
 const RECURSIVE_PSEUDO_CLASSES = new Set([
     'not',
@@ -31,10 +26,15 @@ const RECURSIVE_PSEUDO_CLASSES_ARGS = {
     'nth-child': nthChildRegExp,
     'nth-last-child': nthChildRegExp,
 };
-const TOKENS_FOR_RESTORE = { ...TOKENS };
-for (const pseudoType of ['pseudo-element', 'pseudo-class']) {
-    TOKENS_FOR_RESTORE[pseudoType] = RegExp(TOKENS[pseudoType].source.replace('(?<argument>¶+)', '(?<argument>.+)'), 'gu');
-}
+const getArgumentPatternByType = (type) => {
+    switch (type) {
+        case 'pseudo-element':
+        case 'pseudo-class':
+            return new RegExp(TOKENS[type].source.replace('(?<argument>¶+)', '(?<argument>.+)'), 'gu');
+        default:
+            return TOKENS[type];
+    }
+};
 function gobbleParens(text, offset) {
     let nesting = 0;
     let result = '';
@@ -53,7 +53,7 @@ function gobbleParens(text, offset) {
             return result;
         }
     }
-    throw new Error(`Mismatched parenthesis starting at offset ${offset}`);
+    return result;
 }
 function tokenizeBy(text, grammar = TOKENS) {
     if (!text) {
@@ -106,56 +106,71 @@ function tokenizeBy(text, grammar = TOKENS) {
     }
     return tokens;
 }
-const STRING_PATTERN = /(['"])((?:\\.|\\\n|[^\\\n])+?)\1/g;
+const STRING_PATTERN = /(['"])([^\\\n]+?)\1/g;
+const ESCAPE_PATTERN = /\\./g;
 function tokenize(selector, grammar = TOKENS) {
-    if (!selector) {
-        return null;
-    }
-    // Prevent leading/trailing whitespace be interpreted as combinators
+    // Prevent leading/trailing whitespaces from being interpreted as combinators
     selector = selector.trim();
-    // Replace strings with whitespace strings (to preserve offsets)
-    const stringExpressions = [];
-    selector = selector.replace(STRING_PATTERN, (value, quote, content, offset) => {
-        stringExpressions.push({ value, offset });
-        return `${quote}${'§'.repeat(content.length)}${quote}`;
+    if (selector === '') {
+        return [];
+    }
+    const replacements = [];
+    // Replace escapes with placeholders.
+    selector = selector.replace(ESCAPE_PATTERN, (value, offset) => {
+        replacements.push({ value, offset });
+        return '\uE000'.repeat(value.length);
     });
-    // Now that strings are out of the way, extract parens and replace them with parens with whitespace (to preserve offsets)
-    const parenthesisExpressions = [];
+    // Replace strings with placeholders.
+    selector = selector.replace(STRING_PATTERN, (value, quote, content, offset) => {
+        replacements.push({ value, offset });
+        return `${quote}${'\uE001'.repeat(content.length)}${quote}`;
+    });
+    // Replace parentheses with placeholders.
     {
         let pos = 0;
         let offset;
         while ((offset = selector.indexOf('(', pos)) > -1) {
             const value = gobbleParens(selector, offset);
-            parenthesisExpressions.push({ value, offset });
+            replacements.push({ value, offset });
             selector = `${selector.substring(0, offset)}(${'¶'.repeat(value.length - 2)})${selector.substring(offset + value.length)}`;
             pos = offset + value.length;
         }
     }
     // Now we have no nested structures and we can parse with regexes
     const tokens = tokenizeBy(selector, grammar);
-    // Now restore parens and strings in reverse order
-    function restoreNested(strings, regex, types) {
-        for (const str of strings) {
-            for (const token of tokens) {
-                if (!types.has(token.type) ||
-                    token.pos[0] >= str.offset ||
-                    str.offset >= token.pos[1]) {
-                    continue;
-                }
-                const content = token.content;
-                token.content = token.content.replace(regex, str.value);
-                if (token.content !== content) {
-                    // actually changed?
-                    // Re-evaluate groups
-                    TOKENS_FOR_RESTORE[token.type].lastIndex = 0;
-                    const match = TOKENS_FOR_RESTORE[token.type].exec(token.content);
-                    Object.assign(token, match.groups);
-                }
+    // Replace placeholders in reverse order.
+    const changedTokens = new Set();
+    for (const replacement of replacements.reverse()) {
+        for (const token of tokens) {
+            const { offset, value } = replacement;
+            if (!(token.pos[0] <= offset &&
+                offset + value.length <= token.pos[1])) {
+                continue;
+            }
+            const { content } = token;
+            const tokenOffset = offset - token.pos[0];
+            token.content =
+                content.slice(0, tokenOffset) +
+                    value +
+                    content.slice(tokenOffset + value.length);
+            if (token.content !== content) {
+                changedTokens.add(token);
             }
         }
     }
-    restoreNested(parenthesisExpressions, /\(¶+\)/, TOKENS_WITH_PARENS);
-    restoreNested(stringExpressions, /(['"])§+?\1/, TOKENS_WITH_STRINGS);
+    // Update changed tokens.
+    for (const token of changedTokens) {
+        const pattern = getArgumentPatternByType(token.type);
+        if (!pattern) {
+            throw new Error(`Unknown token type: ${token.type}`);
+        }
+        pattern.lastIndex = 0;
+        const match = pattern.exec(token.content);
+        if (!match) {
+            throw new Error(`Unable to parse content for ${token.type}: ${token.content}`);
+        }
+        Object.assign(token, match.groups);
+    }
     return tokens;
 }
 /**
