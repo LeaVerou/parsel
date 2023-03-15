@@ -196,12 +196,23 @@
 </footer>
 
 <script type="module">
+{
+	const url = new URL(location);
+	if (url.host === 'projects.verou.me') {
+		url.host = 'parsel.verou.me';
+		url.pathname = url.pathname.replace(/^\/parsel\//, '/');
+		window.location.href = url.toString();
+	}
+}
+</script>
+
+<script type="module">
 import * as parsel from "./dist/parsel.js";
+
 self.parsel = parsel; // so that people can experiment in the console
 
 let url = new URL(location);
 const selector = url.searchParams.get("selector");
-
 if (selector) {
 	selectorText.value = selector;
 }
