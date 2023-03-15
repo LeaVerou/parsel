@@ -73,8 +73,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 	}
 
 	const tokens: (Token | string)[] = [text];
-	for (const type in grammar) {
-		const pattern = grammar[type];
+	for (const [type, pattern] of Object.entries(grammar)) {
 		for (let i = 0; i < tokens.length; i++) {
 			const token = tokens[i];
 			if (typeof token !== 'string') {
