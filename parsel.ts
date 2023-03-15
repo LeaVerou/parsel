@@ -1,23 +1,16 @@
 export const TOKENS: Record<string, RegExp> = {
 	attribute:
-		/\[\s*(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
-	id: /#(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
-	class: /\.(?<name>(?:\\.|[-\w\P{ASCII}])+)/gu,
+		/\[\s*(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
+	id: /#(?<name>[-\w\P{ASCII}]+)/gu,
+	class: /\.(?<name>[-\w\P{ASCII}]+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
-	'pseudo-element':
-		/::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
-	'pseudo-class':
-		/:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
-	universal: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?\*/gu,
-	type: /(?:(?<namespace>\*|(?:\\.|[-\w\P{ASCII}])*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
+	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
+	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
+	universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
+	type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
 };
 
-const TOKENS_WITH_PARENS = new Set<string>(['pseudo-class', 'pseudo-element']);
-const TOKENS_WITH_STRINGS = new Set<string>([
-	...TOKENS_WITH_PARENS,
-	'attribute',
-]);
 export const TRIM_TOKENS = new Set<string>(['combinator', 'comma']);
 
 export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
@@ -38,13 +31,21 @@ export const RECURSIVE_PSEUDO_CLASSES_ARGS: Record<string, RegExp> = {
 	'nth-last-child': nthChildRegExp,
 };
 
-const TOKENS_FOR_RESTORE = { ...TOKENS };
-for (const pseudoType of ['pseudo-element', 'pseudo-class'] as const) {
-	TOKENS_FOR_RESTORE[pseudoType] = RegExp(
-		TOKENS[pseudoType].source.replace('(?<argument>¶+)', '(?<argument>.+)'),
-		'gu'
-	);
-}
+const getArgumentPatternByType = (type: string) => {
+	switch (type) {
+		case 'pseudo-element':
+		case 'pseudo-class':
+			return new RegExp(
+				TOKENS[type]!.source.replace(
+					'(?<argument>¶+)',
+					'(?<argument>.+)'
+				),
+				'gu'
+			);
+		default:
+			return TOKENS[type];
+	}
+};
 
 export function gobbleParens(text: string, offset: number): string {
 	let nesting = 0;
@@ -64,7 +65,7 @@ export function gobbleParens(text: string, offset: number): string {
 			return result;
 		}
 	}
-	throw new Error(`Mismatched parenthesis starting at offset ${offset}`);
+	return result;
 }
 
 export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
@@ -130,35 +131,43 @@ export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 	return tokens as Token[];
 }
 
-const STRING_PATTERN = /(['"])((?:\\.|\\\n|[^\\\n])+?)\1/g;
+const STRING_PATTERN = /(['"])([^\\\n]+?)\1/g;
+const ESCAPE_PATTERN = /\\./g;
 export function tokenize(selector: string, grammar = TOKENS) {
-	type TokenString = { value: string; offset: number };
-
-	if (!selector) {
-		return null;
+	// Prevent leading/trailing whitespaces from being interpreted as combinators
+	selector = selector.trim();
+	if (selector === '') {
+		return [];
 	}
 
-	// Prevent leading/trailing whitespace be interpreted as combinators
-	selector = selector.trim();
+	type Replacement = { value: string; offset: number };
+	const replacements: Replacement[] = [];
 
-	// Replace strings with whitespace strings (to preserve offsets)
-	const stringExpressions: TokenString[] = [];
+	// Replace escapes with placeholders.
 	selector = selector.replace(
-		STRING_PATTERN,
-		(value: string, quote: string, content: string, offset: number) => {
-			stringExpressions.push({ value, offset });
-			return `${quote}${'§'.repeat(content.length)}${quote}`;
+		ESCAPE_PATTERN,
+		(value: string, offset: number) => {
+			replacements.push({ value, offset });
+			return '\uE000'.repeat(value.length);
 		}
 	);
 
-	// Now that strings are out of the way, extract parens and replace them with parens with whitespace (to preserve offsets)
-	const parenthesisExpressions: TokenString[] = [];
+	// Replace strings with placeholders.
+	selector = selector.replace(
+		STRING_PATTERN,
+		(value: string, quote: string, content: string, offset: number) => {
+			replacements.push({ value, offset });
+			return `${quote}${'\uE001'.repeat(content.length)}${quote}`;
+		}
+	);
+
+	// Replace parentheses with placeholders.
 	{
 		let pos = 0;
 		let offset: number;
 		while ((offset = selector.indexOf('(', pos)) > -1) {
 			const value = gobbleParens(selector, offset);
-			parenthesisExpressions.push({ value, offset });
+			replacements.push({ value, offset });
 			selector = `${selector.substring(0, offset)}(${'¶'.repeat(
 				value.length - 2
 			)})${selector.substring(offset + value.length)}`;
@@ -169,38 +178,47 @@ export function tokenize(selector: string, grammar = TOKENS) {
 	// Now we have no nested structures and we can parse with regexes
 	const tokens = tokenizeBy(selector, grammar);
 
-	// Now restore parens and strings in reverse order
-	function restoreNested(
-		strings: TokenString[],
-		regex: RegExp,
-		types: Set<string>
-	) {
-		for (const str of strings) {
-			for (const token of tokens) {
-				if (
-					!types.has(token.type) ||
-					token.pos[0] >= str.offset ||
-					str.offset >= token.pos[1]
-				) {
-					continue;
-				}
-				const content = token.content;
-				token.content = token.content.replace(regex, str.value);
-				if (token.content !== content) {
-					// actually changed?
-					// Re-evaluate groups
-					TOKENS_FOR_RESTORE[token.type].lastIndex = 0;
-					const match = TOKENS_FOR_RESTORE[token.type].exec(
-						token.content
-					);
-					Object.assign(token, match!.groups);
-				}
+	// Replace placeholders in reverse order.
+	const changedTokens = new Set<Token>();
+	for (const replacement of replacements.reverse()) {
+		for (const token of tokens) {
+			const { offset, value } = replacement;
+			if (
+				!(
+					token.pos[0] <= offset &&
+					offset + value.length <= token.pos[1]
+				)
+			) {
+				continue;
+			}
+
+			const { content } = token;
+			const tokenOffset = offset - token.pos[0];
+			token.content =
+				content.slice(0, tokenOffset) +
+				value +
+				content.slice(tokenOffset + value.length);
+			if (token.content !== content) {
+				changedTokens.add(token);
 			}
 		}
 	}
 
-	restoreNested(parenthesisExpressions, /\(¶+\)/, TOKENS_WITH_PARENS);
-	restoreNested(stringExpressions, /(['"])§+?\1/, TOKENS_WITH_STRINGS);
+	// Update changed tokens.
+	for (const token of changedTokens) {
+		const pattern = getArgumentPatternByType(token.type);
+		if (!pattern) {
+			throw new Error(`Unknown token type: ${token.type}`);
+		}
+		pattern.lastIndex = 0;
+		const match = pattern.exec(token.content);
+		if (!match) {
+			throw new Error(
+				`Unable to parse content for ${token.type}: ${token.content}`
+			);
+		}
+		Object.assign(token, match.groups);
+	}
 
 	return tokens;
 }
@@ -211,7 +229,7 @@ export function tokenize(selector: string, grammar = TOKENS) {
 function nestTokens(tokens: Token[], { list = true } = {}): AST {
 	if (list && tokens.find((t: { type: string }) => t.type === 'comma')) {
 		const selectors: AST[] = [];
-		const temp = [];
+		const temp: Token[] = [];
 
 		for (let i = 0; i < tokens.length; i++) {
 			if (tokens[i].type === 'comma') {
