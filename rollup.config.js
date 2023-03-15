@@ -6,8 +6,8 @@ export default [
 		input: 'parsel.ts',
 		output: [
 			{
-				file: 'parsel.js',
-				format: 'es',
+				file: "public/parsel.js",
+				format: "es",
 			},
 		],
 		plugins: [typescript({ outputToFilesystem: true, declaration: false })],
