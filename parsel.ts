@@ -1,7 +1,7 @@
 export const TOKENS: Record<string, RegExp> = {
 	attribute:
 		/\[\s*(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
-  id: /#(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
+	id: /#(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
 	class: /\.(?<name>(?:\\.|[-\w\u{0080}-\u{FFFF}])+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
@@ -10,21 +10,15 @@ export const TOKENS: Record<string, RegExp> = {
 	'pseudo-class':
 		/:(?<name>[-\w\u{0080}-\u{FFFF}]+)(?:\((?<argument>¶+)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w]*)\|)?\*/gu,
-	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu // this must be last
+	type: /(?:(?<namespace>\*|[-\w]*)\|)?(?<name>[-\w\u{0080}-\u{FFFF}]+)|\*/gu, // this must be last
 };
 
-const TOKENS_WITH_PARENS = new Set<string>([
-	'pseudo-class',
-	'pseudo-element'
-]);
+const TOKENS_WITH_PARENS = new Set<string>(['pseudo-class', 'pseudo-element']);
 const TOKENS_WITH_STRINGS = new Set<string>([
 	...TOKENS_WITH_PARENS,
-	'attribute'
+	'attribute',
 ]);
-export const TRIM_TOKENS = new Set<string>([
-	'combinator',
-	'comma'
-]);
+export const TRIM_TOKENS = new Set<string>(['combinator', 'comma']);
 
 export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
 	'not',
@@ -35,20 +29,17 @@ export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
 	'-moz-any',
 	'-webkit-any',
 	'nth-child',
-	'nth-last-child'
+	'nth-last-child',
 ]);
 
 const nthChildRegExp = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/;
 export const RECURSIVE_PSEUDO_CLASSES_ARGS: Record<string, RegExp> = {
 	'nth-child': nthChildRegExp,
-	'nth-last-child': nthChildRegExp
+	'nth-last-child': nthChildRegExp,
 };
 
 const TOKENS_FOR_RESTORE = { ...TOKENS };
-for (const pseudoType of [
-	'pseudo-element',
-	'pseudo-class'
-] as const) {
+for (const pseudoType of ['pseudo-element', 'pseudo-class'] as const) {
 	TOKENS_FOR_RESTORE[pseudoType] = RegExp(
 		TOKENS[pseudoType].source.replace('(?<argument>¶+)', '(?<argument>.+)'),
 		'gu'
@@ -108,7 +99,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Tokens[] {
 			args.push({
 				...(match.groups as unknown as Tokens),
 				type,
-				content
+				content,
 			});
 
 			const after = token.slice(from + content.length + 1);
@@ -256,7 +247,7 @@ function nestTokens(tokens: Tokens[], { list = true } = {}): AST {
 				type: 'complex',
 				combinator: token.content,
 				left: nestTokens(left),
-				right: nestTokens(right)
+				right: nestTokens(right),
 			};
 		}
 	}
@@ -270,7 +261,7 @@ function nestTokens(tokens: Tokens[], { list = true } = {}): AST {
 		default:
 			return {
 				type: 'compound',
-				list: [...tokens] // clone to avoid pointers messing up the AST
+				list: [...tokens], // clone to avoid pointers messing up the AST
 			};
 	}
 }
@@ -347,8 +338,8 @@ export function parse(
 					Object.assign(node, {
 						subtree: parse(argument, {
 							recursive: true,
-							list: true
-						})
+							list: true,
+						}),
 					});
 				}
 			}
