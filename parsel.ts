@@ -390,6 +390,19 @@ export function parse(
 }
 
 /**
+ * Converts the given list or (sub)tree to a string.
+ */
+export function stringify(listOrNode: Token[] | AST): string {
+	let tokens: Token[];
+	if (Array.isArray(listOrNode)) {
+		tokens = listOrNode;
+	} else {
+		tokens = [...flatten(listOrNode)].map(([token]) => token);
+	}
+	return tokens.map(token => token.content).join('')
+}
+
+/**
  * To convert the specificity array to a number
  */
 export function specificityToNumber(
