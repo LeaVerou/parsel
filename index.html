@@ -119,6 +119,16 @@
 
 	<p><code>callback</code> is called with each node as the only argument.</p>
 
+	<p>Generate all tokens of a (sub)tree:</p>
+
+	<pre><code>parsel.flatten(node)</code></pre>
+
+	<p>This can be looped through with <code>for ... of</code>. Uses the same order as <code>walk</code></p>
+
+	<p>Convert a list of tokens or a (sub)tree to a string:</p>
+
+	<pre><code>parsel.stringify(listOrNode)</code></pre>
+
 	<p>Calculate specificity (returns an array of 3 numbers):</p>
 
 	<pre><code>parsel.specificity(selectorOrNode)</code></pre>
