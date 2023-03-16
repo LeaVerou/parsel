@@ -12,131 +12,65 @@
 	</style>
 </head>
 <body>
+<script>
+const request = new XMLHttpRequest();
+// We need to synchronously fetch here.
+request.open('GET', './test.json', false);
+request.send();
+const cases = JSON.parse(request.responseText);
+const tests = {
+	testTokenize: {
+		name: 'Tokens',
+		tests: []
+	},
+	testParse: {
+		name: 'Parsing',
+		tests: []
+	},
+	testStringify: {
+		name: 'Stringifying',
+		tests: []
+	},
+	testSpecificity: {
+		name: 'Specificity',
+		tests: []
+	}
+}
+for (const testCase of cases) {
+	switch (testCase.type) {
+		case 'tokenize':
+			tests.testTokenize.tests.push(testCase);
+			break;
+		case 'parse':
+			tests.testParse.tests.push(testCase);
+			break;
+		case 'stringify':
+			tests.testStringify.tests.push(testCase);
+			break;
+		case 'specificity':
+			tests.testSpecificity.tests.push(testCase);
+			break;
+	}
+}
 
-<h1>Parsel Tests</h1>
-
-<section>
-	<h1>Tokens</h1>
-
-	<table class="reftest" data-test="testTokenize" data-columns="3">
-		<tr>
-			<td>#foo</td>
-			<td>[
-				{
-					"name": "foo",
-					"type": "id",
-					"content": "#foo",
-					"pos": [
-						0,
-						4
-					]
-				}
-			]</td>
-		</tr>
-	</table>
-</section>
-
-<section>
-	<h1>AST</h1>
-
-	<table class="reftest" data-test="testAST" data-columns="3">
-		<tr>
-			<td>#foo</td>
-			<td>{
-				"name": "foo",
-				"type": "id",
-				"content": "#foo",
-				"pos": [
-					0,
-					4
-				]
-			}</td>
-		</tr>
-	</table>
-
-	<table class="reftest" data-test="testAST" data-columns="3">
-		<tr>
-			<td>*</td>
-			<td>{"type":"universal", "content":"*", "pos":[0,1]}</td>
-		</tr>
-	</table>
-
-	<table class="reftest" data-test="testAST" data-columns="3">
-		<tr>
-			<td>html|*</td>
-			<td>{
-				"namespace": "html",
-				"type": "universal",
-				"content": "html|*",
-				"pos": [
-					0,
-					6
-				]
-			}</td>
-		</tr>
-	</table>
-
-	<table class="reftest" data-test="testIndexedPseudoClass" data-columns="3">
-		<tr>
-			<td>div:nth-child(2n+1 of #someId.someClass)</td>
-			<td>{
-				"ast": {
-					"type": "compound",
-					"list": [
-						{
-							"name": "div",
-							"type": "type",
-							"content": "div",
-							"pos": [
-								0,
-								3
-							]
-						},
-						{
-							"name": "nth-child",
-							"argument": "2n+1 of #someId.someClass",
-							"type": "pseudo-class",
-							"content": ":nth-child(2n+1 of #someId.someClass)",
-							"pos": [
-								3,
-								40
-							],
-							"index": "2n+1",
-							"subtree": {
-								"type": "compound",
-								"list": [
-									{
-										"name": "someId",
-										"type": "id",
-										"content": "#someId",
-										"pos": [
-											0,
-											7
-										]
-									},
-									{
-										"name": "someClass",
-										"type": "class",
-										"content": ".someClass",
-										"pos": [
-											7,
-											17
-										]
-									}
-								]
-							}
-						}
-					]
-				},
-				"specificity": [
-					1,
-					2,
-					1
-				]
-			}</td>
-		</tr>
-	</table>
-</section>
+const createSection = (name) => {
+	const section = document.createElement('section');
+	document.body.prepend(section);
+	const header = section.appendChild(document.createElement('h1'));
+	header.textContent = name;
+	return section;
+}
+for (const [fnName, spec] of Object.entries(tests).reverse()) {
+	const section = createSection(spec.name);
+	for (const testCase of spec.tests) {
+		const table = section.appendChild(document.createElement('table'));
+		table.className = 'reftest';
+		table.dataset.test = fnName;
+		table.dataset.columns = '3';
+		table.innerHTML = `<tr><td>${testCase.input}</td><td>${JSON.stringify(testCase.expected, null, "\t")}</td></tr>`;
+	}
+}
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/blissfuljs/1.0.4/bliss.min.js"></script>
 <script src="https://test.mavo.io/test.js"></script>
@@ -145,26 +79,34 @@ import * as parsel from "./dist/parsel.js";
 
 window.testTokenize = function(test, result, expected) {
 	console.log(arguments)
-	let tokens = parsel.tokenize(test.textContent);
-	let serialized = JSON.stringify(tokens, null, "\t");
-	result.textContent = serialized;
-	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
+	const tokens = parsel.tokenize(test.textContent);
+	const actual = JSON.stringify(tokens, null, "\t");
+	result.textContent = actual;
+	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), actual);
 }
 
-window.testAST = function(test, result, expected) {
-	console.log(arguments)
-	let ast = parsel.parse(test.textContent);
-	let serialized = JSON.stringify(ast, null, "\t");
-	result.textContent = serialized;
-	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
-}
-window.testIndexedPseudoClass = function(test, result, expected) {
+window.testParse = function(test, result, expected) {
 	console.log(arguments)
 	const ast = parsel.parse(test.textContent);
+	const actual = JSON.stringify(ast, null, "\t");
+	result.textContent = actual;
+	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), actual);
+}
+
+window.testStringify = function(test, result, expected) {
+	console.log(arguments)
+	const tokens = parsel.tokenize(test.textContent);
+	const actual = parsel.stringify(tokens);
+	result.textContent = JSON.stringify(actual);
+	return Test.equals(JSON.parse(expected.textContent), actual);
+}
+
+window.testSpecificity = function(test, result, expected) {
+	console.log(arguments)
 	const specificity = parsel.specificity(test.textContent);
-	const serialized = JSON.stringify({ast, specificity}, null, "\t");
-	result.textContent = serialized;
-	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), serialized);
+	const actual = JSON.stringify(specificity, null, "\t");
+	result.textContent = actual;
+	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), actual);
 }
 </script>
 
