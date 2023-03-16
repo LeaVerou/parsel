@@ -284,6 +284,34 @@ function nestTokens(tokens: Token[], { list = true } = {}): AST {
 }
 
 /**
+ * Traverse an AST in depth-first order
+ */
+export function* flatten(
+	node: AST,
+	/**
+	 * @internal
+	 */
+	parent?: AST
+): IterableIterator<[Token, AST | undefined]> {
+	switch (node.type) {
+		case 'list':
+			for (let child of node.list) {
+				yield* flatten(child, node);
+			}
+			break;
+		case 'complex':
+			yield* flatten(node.left, node);
+			yield* flatten(node.right, node);
+			break;
+		case 'compound':
+			yield* node.list.map((token): [Token, Compound] => [token, node]);
+			break;
+		default:
+			yield [node, parent];
+	}
+}
+
+/**
  * Traverse an AST (or part thereof), in depth-first order
  */
 export function walk(
@@ -297,17 +325,9 @@ export function walk(
 	if (!node) {
 		return;
 	}
-
-	if ('left' in node && 'right' in node) {
-		walk(node.left, visit, node);
-		walk(node.right, visit, node);
-	} else if ('list' in node) {
-		for (let n of node.list) {
-			walk(n, visit, node);
-		}
+	for (const [token, ast] of flatten(node, parent)) {
+		visit(token, ast);
 	}
-
-	visit(node, parent);
 }
 
 export interface ParserOptions {
@@ -337,31 +357,34 @@ export function parse(
 		return ast;
 	}
 
-	walk(ast, (node) => {
-		if (node.type === 'pseudo-class' && node.argument) {
-			if (RECURSIVE_PSEUDO_CLASSES.has(node.name)) {
-				let argument = node.argument;
-				const childArg = RECURSIVE_PSEUDO_CLASSES_ARGS[node.name];
-				if (childArg) {
-					const match = childArg.exec(argument);
-					if (!match) {
-						return;
-					}
-
-					Object.assign(node, match.groups);
-					argument = match.groups!['subtree'];
-				}
-				if (argument) {
-					Object.assign(node, {
-						subtree: parse(argument, {
-							recursive: true,
-							list: true,
-						}),
-					});
-				}
-			}
+	for (const [token] of flatten(ast)) {
+		if (token.type !== 'pseudo-class' || !token.argument) {
+			continue;
 		}
-	});
+		if (!RECURSIVE_PSEUDO_CLASSES.has(token.name)) {
+			continue;
+		}
+		let argument = token.argument;
+		const childArg = RECURSIVE_PSEUDO_CLASSES_ARGS[token.name];
+		if (childArg) {
+			const match = childArg.exec(argument);
+			if (!match) {
+				continue;
+			}
+
+			Object.assign(token, match.groups);
+			argument = match.groups!['subtree'];
+		}
+		if (!argument) {
+			continue;
+		}
+		Object.assign(token, {
+			subtree: parse(argument, {
+				recursive: true,
+				list: true,
+			}),
+		});
+	}
 
 	return ast;
 }
@@ -406,33 +429,42 @@ export function specificity(selector: string | AST): number[] {
 		return specificities[numbers.indexOf(Math.max(...numbers))];
 	}
 
-	let ret = [0, 0, 0];
-	walk(ast, (node) => {
-		if (node.type === 'id') {
-			ret[0]++;
-		} else if (node.type === 'class' || node.type === 'attribute') {
-			ret[1]++;
-		} else if (
-			(node.type === 'type' && node.content !== '*') ||
-			node.type === 'pseudo-element'
-		) {
-			ret[2]++;
-		} else if (node.type === 'pseudo-class' && node.name !== 'where') {
-			if (RECURSIVE_PSEUDO_CLASSES.has(node.name) && node.subtree) {
-				const sub = specificity(node.subtree);
+	const ret = [0, 0, 0];
+	for (const [token] of flatten(ast)) {
+		switch (token.type) {
+			case 'id':
+				ret[0]++;
+				break;
+			case 'class':
+			case 'attribute':
+				ret[1]++;
+				break;
+			case 'pseudo-element':
+			case 'type':
+				ret[2]++;
+				break;
+			case 'pseudo-class':
+				if (token.name === 'where') {
+					break;
+				}
+				if (
+					!RECURSIVE_PSEUDO_CLASSES.has(token.name) ||
+					!token.subtree
+				) {
+					ret[1]++;
+					break;
+				}
+				const sub = specificity(token.subtree);
 				sub.forEach((s, i) => (ret[i] += s));
 				// :nth-child() & :nth-last-child() add (0, 1, 0) to the specificity of their most complex selector
 				if (
-					node.name === 'nth-child' ||
-					node.name === 'nth-last-child'
+					token.name === 'nth-child' ||
+					token.name === 'nth-last-child'
 				) {
 					ret[1]++;
 				}
-			} else {
-				ret[1]++;
-			}
 		}
-	});
+	}
 
 	return ret;
 }
