@@ -7,6 +7,16 @@
 	<link rel="shortcut icon" href="assets/favicon.svg">
 	<link rel="stylesheet" href="assets/prism.css">
 	<link rel="stylesheet" href="assets/style.css">
+	<script>
+	{
+		const url = new URL(location);
+		if (url.host === 'projects.verou.me') {
+			url.host = 'parsel.verou.me';
+			url.pathname = url.pathname.replace(/^\/parsel\//, '/');
+			window.location.href = url.toString();
+		}
+	}
+	</script>
 </head>
 <body class="language-javascript">
 
@@ -194,17 +204,6 @@
 		&bull; <a href="test.html">Tests</a>
 		&bull; <a href="https://github.com/leaverou/parsel">Github</a>
 </footer>
-
-<script type="module">
-{
-	const url = new URL(location);
-	if (url.host === 'projects.verou.me') {
-		url.host = 'parsel.verou.me';
-		url.pathname = url.pathname.replace(/^\/parsel\//, '/');
-		window.location.href = url.toString();
-	}
-}
-</script>
 
 <script type="module">
 import * as parsel from "./dist/parsel.js";
