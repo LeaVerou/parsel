@@ -88,7 +88,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 			}
 
 			const from = match.index - 1;
-			const args: (Token | string)[] = [];
+			const args: typeof tokens = [];
 			const content = match[0];
 
 			const before = token.slice(0, from + 1);
@@ -97,10 +97,10 @@ export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 			}
 
 			args.push({
-				...(match.groups as unknown as Token),
+				...match.groups,
 				type,
 				content,
-			});
+			} as unknown as Token);
 
 			const after = token.slice(from + content.length + 1);
 			if (after) {
@@ -133,7 +133,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 
 const STRING_PATTERN = /(['"])([^\\\n]+?)\1/g;
 const ESCAPE_PATTERN = /\\./g;
-export function tokenize(selector: string, grammar = TOKENS) {
+export function tokenize(selector: string, grammar = TOKENS): Token[] {
 	// Prevent leading/trailing whitespaces from being interpreted as combinators
 	selector = selector.trim();
 	if (selector === '') {
@@ -437,18 +437,77 @@ export function specificity(selector: string | AST): number[] {
 	return ret;
 }
 
-export interface Token {
+export interface BaseToken {
 	type: string;
 	content: string;
-	name: string;
-	namespace?: string;
-	value?: string;
 	pos: [number, number];
-	operator?: string;
+}
+
+export interface CommaToken extends BaseToken {
+	type: 'comma';
+}
+
+export interface CombinatorToken extends BaseToken {
+	type: 'combinator';
+}
+
+export interface NamedToken extends BaseToken {
+	name: string;
+}
+
+export interface IdToken extends NamedToken {
+	type: 'id';
+}
+
+export interface ClassToken extends NamedToken {
+	type: 'class';
+}
+
+export interface PseudoElementToken extends NamedToken {
+	type: 'pseudo-element';
+	argument?: string;
+}
+
+export interface PseudoClassToken extends NamedToken {
+	type: 'pseudo-class';
 	argument?: string;
 	subtree?: AST;
-	caseSensitive?: 'i';
 }
+
+export interface NamespacedToken extends BaseToken {
+	namespace?: string;
+}
+
+export interface UniversalToken extends NamespacedToken {
+	type: 'universal';
+}
+
+export interface AttributeToken extends NamespacedToken, NamedToken {
+	type: 'attribute';
+	operator?: string;
+	value?: string;
+	caseSensitive?: 'i' | 'I' | 's' | 'S';
+}
+
+export interface TypeToken extends NamespacedToken, NamedToken {
+	type: 'type';
+}
+
+export interface UnknownToken extends BaseToken {
+	type: never;
+}
+
+export type Token =
+	| AttributeToken
+	| IdToken
+	| ClassToken
+	| CommaToken
+	| CombinatorToken
+	| PseudoElementToken
+	| PseudoClassToken
+	| UniversalToken
+	| TypeToken
+	| UnknownToken;
 
 export interface Complex {
 	type: 'complex';
