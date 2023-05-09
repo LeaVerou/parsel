@@ -951,5 +951,19 @@
 		"type": "stringify",
 		"input": "input[type=\"radio\"]:checked ~ label:after",
 		"expected": "input[type=\"radio\"]:checked~label:after"
+	},
+	{
+		"type": "parse",
+		"input": ":where()",
+		"expected": {
+			"name": "where",
+			"argument": "",
+			"type": "pseudo-class",
+			"content": ":where()",
+			"pos": [
+				0,
+				8
+			]
+		}
 	}
 ]

@@ -5,8 +5,8 @@ export const TOKENS: Record<string, RegExp> = {
 	class: /\.(?<name>[-\w\P{ASCII}]+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
-	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu, // this must be before pseudo-class
-	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶+)\))?/gu,
+	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu, // this must be before pseudo-class
+	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
 	type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
 };
@@ -37,8 +37,8 @@ const getArgumentPatternByType = (type: string) => {
 		case 'pseudo-class':
 			return new RegExp(
 				TOKENS[type]!.source.replace(
-					'(?<argument>¶+)',
-					'(?<argument>.+)'
+					'(?<argument>¶*)',
+					'(?<argument>.*)'
 				),
 				'gu'
 			);
