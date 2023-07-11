@@ -3,14 +3,14 @@
   "version": "1.1.1",
   "description": "A tiny, permissive CSS selector parser",
   "type": "module",
-  "main": "dist/cjs/parsel.min.js",
+  "main": "dist/cjs/parsel.min.cjs",
   "module": "dist/parsel.min.js",
   "types": "./dist/parsel.d.ts",
   "exports": {
     ".": {
       "browser": "./dist/parsel.js",
       "import": "./dist/parsel.min.js",
-      "require": "./dist/cjs/parsel.min.js",
+      "require": "./dist/cjs/parsel.min.cjs",
       "types": "./dist/parsel.d.ts",
       "umd": "./dist/umd/parsel.min.js"
     }
