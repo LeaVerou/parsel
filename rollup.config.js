@@ -6,7 +6,7 @@ export default [
 		input: 'parsel.ts',
 		output: [
 			{
-				file: 'dist/cjs/parsel.cjs',
+				file: 'dist/parsel.cjs',
 				format: 'cjs',
 			},
 			{
@@ -26,7 +26,7 @@ export default [
 		].concat(
 			[
 				{
-					file: 'dist/cjs/parsel.min.cjs',
+					file: 'dist/parsel.min.cjs',
 					format: 'cjs',
 				},
 				{
