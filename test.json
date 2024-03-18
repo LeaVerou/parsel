@@ -965,5 +965,85 @@
 				8
 			]
 		}
+	},
+	{
+		"type": "tokenize",
+		"input": ".container:has(~ .image)",
+		"expected": [
+			{
+				"name": "container",
+				"type": "class",
+				"content": ".container",
+				"pos": [
+					0,
+					10
+				]
+			},
+			{
+				"name": "has",
+				"argument": "~ .image",
+				"type": "pseudo-class",
+				"content": ":has(~ .image)",
+				"pos": [
+					10,
+					24
+				]
+			}
+		]
+	},
+	{
+		"type": "parse",
+		"input": ".container:has(~ .image)",
+		"expected": {
+			"type": "compound",
+			"list": [
+				{
+					"name": "container",
+					"type": "class",
+					"content": ".container",
+					"pos": [
+						0,
+						10
+					]
+				},
+				{
+					"name": "has",
+					"argument": "~ .image",
+					"type": "pseudo-class",
+					"content": ":has(~ .image)",
+					"pos": [
+						10,
+						24
+					],
+					"subtree": {
+						"type": "relative",
+						"combinator": "~",
+						"right": {
+							"name": "image",
+							"type": "class",
+							"content": ".image",
+							"pos": [
+								2,
+								8
+							]
+						}
+					}
+				}
+			]
+		}
+	},
+	{
+		"type": "stringify",
+		"input": ".container:has(~ .image)",
+		"expected": ".container:has(~ .image)"
+	},
+	{
+		"type": "specificity",
+		"input": ".container:has(~ .image)",
+		"expected": [
+			0,
+			2,
+			0
+		]
 	}
 ]
