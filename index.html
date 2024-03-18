@@ -108,10 +108,11 @@
 
 	<p>You can also provide options:</p>
 
-	<pre><code>parsel.parse(selector, {recursive: false, list: false})</code></pre>
+	<pre><code>parsel.parse(selector, {recursive: false, list: false, relative: false})</code></pre>
 
 	<p>The <code>recursive</code> option parses the arguments of pseudo-classes whose argument is a selector like <code>:not()</code>, <code>:is()</code>, <code>:where()</code> etc into a <code>subtree</code> property.
-	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework)</p>
+	The <code>list</code> option parses selector lists (<code>A, B, C</code>). The only reason to turn it off is as a performance optimization when you are processing a large volume of selectors that are not lists (e.g. the output of certain CSS parsers like Rework).
+	The <code>relative</code> option parses relative selectors (<code>> A, ~ B, + C</code>) like those that are accepted by <code>:has()</code>. Parsel automatically handles <code>:has()</code> so the only reason to enable this option is when you need to parse a relative selector or selector list manually.</p>
 
 	<p>Traverse all tokens of a (sub)tree:</p>
 
