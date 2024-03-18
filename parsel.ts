@@ -260,6 +260,14 @@ function nestTokens(tokens: Token[], { list = true } = {}): AST {
 			let left = tokens.slice(0, i);
 			let right = tokens.slice(i + 1);
 
+			if (left.length === 0) {
+				return {
+					type: 'relative',
+					combinator: token.content,
+					right: nestTokens(right),
+				};
+			}
+
 			return {
 				type: 'complex',
 				combinator: token.content,
@@ -301,6 +309,9 @@ export function* flatten(
 			break;
 		case 'complex':
 			yield* flatten(node.left, node);
+			yield* flatten(node.right, node);
+			break;
+		case 'relative':
 			yield* flatten(node.right, node);
 			break;
 		case 'compound':
@@ -561,6 +572,12 @@ export interface Complex {
 	left: AST;
 }
 
+export interface Relative {
+	type: 'relative';
+	combinator: string;
+	right: AST;
+}
+
 export interface Compound {
 	type: 'compound';
 	list: Token[];
@@ -571,4 +588,4 @@ export interface List {
 	list: AST[];
 }
 
-export type AST = Complex | Compound | List | Token;
+export type AST = Complex | Relative | Compound | List | Token;
