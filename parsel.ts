@@ -393,13 +393,24 @@ export function parse(
  * Converts the given list or (sub)tree to a string.
  */
 export function stringify(listOrNode: Token[] | AST): string {
-	let tokens: Token[];
 	if (Array.isArray(listOrNode)) {
-		tokens = listOrNode;
-	} else {
-		tokens = [...flatten(listOrNode)].map(([token]) => token);
+		return listOrNode.map((token) => token.content).join("");
 	}
-	return tokens.map(token => token.content).join('')
+
+	switch (listOrNode.type) {
+		case "list":
+			return listOrNode.list.map(stringify).join(",");
+		case "complex":
+			return (
+				stringify(listOrNode.left) +
+				listOrNode.combinator +
+				stringify(listOrNode.right)
+			);
+		case "compound":
+			return listOrNode.list.map(stringify).join("");
+		default:
+			return listOrNode.content;
+	}
 }
 
 /**
