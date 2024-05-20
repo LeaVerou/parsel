@@ -27,8 +27,12 @@ const tests = {
 		name: 'Parsing',
 		tests: []
 	},
-	testStringify: {
-		name: 'Stringifying',
+	testStringifyTokens: {
+		name: 'Stringifying tokens',
+		tests: []
+	},
+	testStringifyAST: {
+		name: 'Stringifying AST',
 		tests: []
 	},
 	testSpecificity: {
@@ -45,7 +49,8 @@ for (const testCase of cases) {
 			tests.testParse.tests.push(testCase);
 			break;
 		case 'stringify':
-			tests.testStringify.tests.push(testCase);
+			tests.testStringifyTokens.tests.push(testCase);
+			tests.testStringifyAST.tests.push(testCase);
 			break;
 		case 'specificity':
 			tests.testSpecificity.tests.push(testCase);
@@ -93,9 +98,17 @@ window.testParse = function(test, result, expected) {
 	return Test.equals(JSON.stringify(JSON.parse(expected.textContent), null, "\t"), actual);
 }
 
-window.testStringify = function(test, result, expected) {
+window.testStringifyTokens = function(test, result, expected) {
 	console.log(arguments)
 	const tokens = parsel.tokenize(test.textContent);
+	const actual = parsel.stringify(tokens);
+	result.textContent = JSON.stringify(actual);
+	return Test.equals(JSON.parse(expected.textContent), actual);
+}
+
+window.testStringifyAST = function(test, result, expected) {
+	console.log(arguments)
+	const tokens = parsel.parse(test.textContent);
 	const actual = parsel.stringify(tokens);
 	result.textContent = JSON.stringify(actual);
 	return Test.equals(JSON.parse(expected.textContent), actual);
