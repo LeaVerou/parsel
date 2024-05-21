@@ -13,6 +13,10 @@ export const TOKENS: Record<string, RegExp> = {
 
 export const TRIM_TOKENS = new Set<string>(['combinator', 'comma']);
 
+export const RELATIVE_PSEUDO_CLASSES = new Set<string>([
+	'has',
+]);
+
 export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
 	'not',
 	'is',
@@ -226,7 +230,7 @@ export function tokenize(selector: string, grammar = TOKENS): Token[] {
 /**
  *  Convert a flat list of tokens into a tree of complex & compound selectors
  */
-function nestTokens(tokens: Token[], { list = true } = {}): AST {
+function nestTokens(tokens: Token[], { list = true, relative = false } = {}): AST {
 	if (list && tokens.find((t: { type: string }) => t.type === 'comma')) {
 		const selectors: AST[] = [];
 		const temp: Token[] = [];
@@ -237,7 +241,7 @@ function nestTokens(tokens: Token[], { list = true } = {}): AST {
 					throw new Error('Incorrect comma at ' + i);
 				}
 
-				selectors.push(nestTokens(temp, { list: false }));
+				selectors.push(nestTokens(temp, { list: false, relative }));
 				temp.length = 0;
 			} else {
 				temp.push(tokens[i]);
@@ -247,7 +251,7 @@ function nestTokens(tokens: Token[], { list = true } = {}): AST {
 		if (temp.length === 0) {
 			throw new Error('Trailing comma');
 		} else {
-			selectors.push(nestTokens(temp, { list: false }));
+			selectors.push(nestTokens(temp, { list: false, relative }));
 		}
 
 		return { type: 'list', list: selectors };
@@ -259,6 +263,14 @@ function nestTokens(tokens: Token[], { list = true } = {}): AST {
 		if (token.type === 'combinator') {
 			let left = tokens.slice(0, i);
 			let right = tokens.slice(i + 1);
+
+			if (relative && left.length === 0) {
+				return {
+					type: 'relative',
+					combinator: token.content,
+					right: nestTokens(right),
+				};
+			}
 
 			return {
 				type: 'complex',
@@ -303,6 +315,9 @@ export function* flatten(
 			yield* flatten(node.left, node);
 			yield* flatten(node.right, node);
 			break;
+		case 'relative':
+			yield* flatten(node.right, node);
+			break;
 		case 'compound':
 			yield* node.list.map((token): [Token, Compound] => [token, node]);
 			break;
@@ -333,6 +348,7 @@ export function walk(
 export interface ParserOptions {
 	recursive?: boolean;
 	list?: boolean;
+	relative?: boolean
 }
 
 /**
@@ -341,17 +357,18 @@ export interface ParserOptions {
  * @param selector - The selector to parse
  * @param options.recursive - Whether to parse the arguments of pseudo-classes like :is(), :has() etc. Defaults to true.
  * @param options.list - Whether this can be a selector list (A, B, C etc). Defaults to true.
+ * @param options.relative - Whether this can be a relative selector list (> B, ~ B, + B etc). Defaults to false.
  */
 export function parse(
 	selector: string,
-	{ recursive = true, list = true }: ParserOptions = {}
+	{ recursive = true, list = true, relative = false }: ParserOptions = {}
 ): AST | undefined {
 	const tokens = tokenize(selector);
 	if (!tokens) {
 		return;
 	}
 
-	const ast = nestTokens(tokens, { list });
+	const ast = nestTokens(tokens, { list, relative });
 
 	if (!recursive) {
 		return ast;
@@ -382,6 +399,7 @@ export function parse(
 			subtree: parse(argument, {
 				recursive: true,
 				list: true,
+				relative: RELATIVE_PSEUDO_CLASSES.has(token.name),
 			}),
 		});
 	}
@@ -434,7 +452,7 @@ export function specificityToNumber(
 export function specificity(selector: string | AST): number[] {
 	let ast: string | AST | undefined = selector;
 	if (typeof ast === 'string') {
-		ast = parse(ast, { recursive: true });
+		ast = parse(ast, { recursive: true, relative: true });
 	}
 	if (!ast) {
 		return [];
@@ -572,6 +590,12 @@ export interface Complex {
 	left: AST;
 }
 
+export interface Relative {
+	type: 'relative';
+	combinator: string;
+	right: AST;
+}
+
 export interface Compound {
 	type: 'compound';
 	list: Token[];
@@ -582,4 +606,4 @@ export interface List {
 	list: AST[];
 }
 
-export type AST = Complex | Compound | List | Token;
+export type AST = Complex | Relative | Compound | List | Token;
