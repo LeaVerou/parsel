@@ -411,6 +411,11 @@ export function stringify(listOrNode: Token[] | AST): string {
 	switch (listOrNode.type) {
 		case "list":
 			return listOrNode.list.map(stringify).join(",");
+		case "relative":
+			return (
+				listOrNode.combinator +
+				stringify(listOrNode.right)
+			);
 		case "complex":
 			return (
 				stringify(listOrNode.left) +
