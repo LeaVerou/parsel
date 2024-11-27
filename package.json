@@ -1,6 +1,6 @@
 {
   "name": "parsel-js",
-  "version": "1.1.2",
+  "version": "1.2.0",
   "description": "A tiny, permissive CSS selector parser",
   "type": "module",
   "main": "dist/parsel.min.cjs",
@@ -20,7 +20,7 @@
     "test": "http-server -o test.html -c-1",
     "build": "npx rollup -c",
     "prepublish": "npm run build",
-	"release": "release-it"
+    "release": "release-it"
   },
   "repository": {
     "type": "git",
