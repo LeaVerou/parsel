@@ -19,7 +19,7 @@
     "start": "http-server -o index.html -c-1",
     "test": "http-server -o test.html -c-1",
     "build": "npx rollup -c",
-    "prepublish": "npm run build",
+    "prepare": "npm run build",
     "release": "release-it"
   },
   "repository": {
