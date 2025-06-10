@@ -632,6 +632,34 @@
 		]
 	},
 	{
+		"type": "tokenize",
+		"input": "[a=\"\"][b=\"\"]",
+		"expected": [
+			{
+				"name": "a",
+				"operator": "=",
+				"value": "\"\"",
+				"type": "attribute",
+				"content": "[a=\"\"]",
+				"pos": [
+					0,
+					6
+				]
+			},
+			{
+				"name": "b",
+				"operator": "=",
+				"value": "\"\"",
+				"type": "attribute",
+				"content": "[b=\"\"]",
+				"pos": [
+					6,
+					12
+				]
+			}
+		]
+	},
+	{
 		"type": "specificity",
 		"input": "input[type=\"checkbox\"][checked]:indeterminate + label",
 		"expected": [
