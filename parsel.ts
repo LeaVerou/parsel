@@ -131,7 +131,7 @@ export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
 	return tokens as Token[];
 }
 
-const STRING_PATTERN = /(['"])([^\\\n]+?)\1/g;
+const STRING_PATTERN = /(['"])([^\\\n]*?)\1/g;
 const ESCAPE_PATTERN = /\\./g;
 export function tokenize(selector: string, grammar = TOKENS): Token[] {
 	// Prevent leading/trailing whitespaces from being interpreted as combinators
