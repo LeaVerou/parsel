@@ -1073,5 +1073,101 @@
 			2,
 			0
 		]
+	},
+	{
+		"type": "tokenize",
+		"input": "& > button",
+		"expected": [
+			{
+				"type": "nesting",
+				"content": "&",
+				"pos": [
+					0,
+					1
+				]
+			},
+			{
+				"type": "combinator",
+				"content": ">",
+				"pos": [
+					1,
+					4
+				]
+			},
+			{
+				"name": "button",
+				"type": "type",
+				"content": "button",
+				"pos": [
+					4,
+					10
+				]
+			}
+		]
+	},
+	{
+		"type": "parse",
+		"input": "& > button",
+		"expected": {
+			"type": "complex",
+			"combinator": ">",
+			"left": {
+				"type": "nesting",
+				"content": "&",
+				"pos": [
+					0,
+					1
+				]
+			},
+			"right": {
+				"name": "button",
+				"type": "type",
+				"content": "button",
+				"pos": [
+					4,
+					10
+				]
+			}
+		}
+	},
+	{
+		"type": "stringify",
+		"input": "& > button",
+		"expected": "&>button"
+	},
+	{
+		"type": "parse",
+		"input": "&.active",
+		"expected": {
+			"type": "compound",
+			"list": [
+				{
+					"type": "nesting",
+					"content": "&",
+					"pos": [
+						0,
+						1
+					]
+				},
+				{
+					"name": "active",
+					"type": "class",
+					"content": ".active",
+					"pos": [
+						1,
+						8
+					]
+				}
+			]
+		}
+	},
+	{
+		"type": "specificity",
+		"input": "& > button",
+		"expected": [
+			0,
+			0,
+			1
+		]
 	}
 ]

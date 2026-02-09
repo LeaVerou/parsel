@@ -8,6 +8,7 @@ export const TOKENS: Record<string, RegExp> = {
 	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu, // this must be before pseudo-class
 	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
+	nesting: /&/g, // this must be before type
 	type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
 };
 
@@ -483,6 +484,8 @@ export function specificity(selector: string | AST): number[] {
 			case 'type':
 				ret[2]++;
 				break;
+			case 'nesting':
+				break;
 			case 'pseudo-class':
 				if (token.name === 'where') {
 					break;
@@ -554,6 +557,10 @@ export interface UniversalToken extends NamespacedToken {
 	type: 'universal';
 }
 
+export interface NestingToken extends BaseToken {
+	type: 'nesting';
+}
+
 export interface AttributeToken extends NamespacedToken, NamedToken {
 	type: 'attribute';
 	operator?: string;
@@ -578,6 +585,7 @@ export type Token =
 	| PseudoElementToken
 	| PseudoClassToken
 	| UniversalToken
+	| NestingToken
 	| TypeToken
 	| UnknownToken;
 
