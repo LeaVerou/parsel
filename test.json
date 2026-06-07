@@ -1073,5 +1073,101 @@
 			2,
 			0
 		]
+	},
+	{
+		"type": "parse",
+		"input": ":where([style])",
+		"expected": {
+			"name": "where",
+			"argument": "[style]",
+			"type": "pseudo-class",
+			"content": ":where([style])",
+			"pos": [
+				0,
+				15
+			],
+			"subtree": {
+				"name": "style",
+				"type": "attribute",
+				"content": "[style]",
+				"pos": [
+					0,
+					7
+				]
+			}
+		}
+	},
+	{
+		"type": "parse",
+		"input": ":is(.a, #b)",
+		"expected": {
+			"name": "is",
+			"argument": ".a, #b",
+			"type": "pseudo-class",
+			"content": ":is(.a, #b)",
+			"pos": [
+				0,
+				11
+			],
+			"subtree": {
+				"type": "list",
+				"list": [
+					{
+						"name": "a",
+						"type": "class",
+						"content": ".a",
+						"pos": [
+							0,
+							2
+						]
+					},
+					{
+						"name": "b",
+						"type": "id",
+						"content": "#b",
+						"pos": [
+							4,
+							6
+						]
+					}
+				]
+			}
+		}
+	},
+	{
+		"type": "parse",
+		"input": ":not(span > a)",
+		"expected": {
+			"name": "not",
+			"argument": "span > a",
+			"type": "pseudo-class",
+			"content": ":not(span > a)",
+			"pos": [
+				0,
+				14
+			],
+			"subtree": {
+				"type": "complex",
+				"combinator": ">",
+				"left": {
+					"name": "span",
+					"type": "type",
+					"content": "span",
+					"pos": [
+						0,
+						4
+					]
+				},
+				"right": {
+					"name": "a",
+					"type": "type",
+					"content": "a",
+					"pos": [
+						7,
+						8
+					]
+				}
+			}
+		}
 	}
 ]
