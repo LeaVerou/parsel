@@ -35,9 +35,17 @@ const getArgumentPatternByType = (type: string) => {
 	switch (type) {
 		case 'pseudo-element':
 		case 'pseudo-class':
+			// `RegExp.prototype.source` serializes the non-ASCII `¶` (U+00B6)
+			// placeholder differently across engines: V8 (Node/Chrome) keeps it
+			// literal, while JavaScriptCore (Safari/Bun) escapes it to `\u00B6`.
+			// A literal-string replace of `(?<argument>¶*)` therefore silently
+			// no-ops on JSC, leaving the argument group capturing only `¶`
+			// characters — so `:where()`/`:is()`/`:not()` arguments come back
+			// empty and `subtree` is never populated. Match the argument group
+			// structurally so the replacement is engine-independent.
 			return new RegExp(
 				TOKENS[type]!.source.replace(
-					'(?<argument>¶*)',
+					/\(\?<argument>[^)]*\)/,
 					'(?<argument>.*)'
 				),
 				'gu'
