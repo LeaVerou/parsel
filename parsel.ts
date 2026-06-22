@@ -438,7 +438,7 @@ export function specificityToNumber(
 ): number {
 	base = base || Math.max(...specificity) + 1;
 	return (
-		specificity[0] * (base << 1) + specificity[1] * base + specificity[2]
+		specificity[0] * (base * base) + specificity[1] * base + specificity[2]
 	);
 }
 
@@ -464,7 +464,7 @@ export function specificity(selector: string | AST): number[] {
 			return sp;
 		});
 		const numbers = specificities.map((ast) =>
-			specificityToNumber(ast, base)
+			specificityToNumber(ast, base + 1)
 		);
 		return specificities[numbers.indexOf(Math.max(...numbers))];
 	}
