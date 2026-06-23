@@ -1073,5 +1073,41 @@
 			2,
 			0
 		]
+	},
+	{
+		"type": "specificity",
+		"input": "#a, .b.c.d",
+		"expected": [
+			1,
+			0,
+			0
+		]
+	},
+	{
+		"type": "specificity",
+		"input": ":is(#a, .b.c.d)",
+		"expected": [
+			1,
+			0,
+			0
+		]
+	},
+	{
+		"type": "specificity",
+		"input": ":is(.b.c, #a)",
+		"expected": [
+			1,
+			0,
+			0
+		]
+	},
+	{
+		"type": "specificity",
+		"input": ":is(#id, .a.b.c.d.e.f.g.h.i.j.k.l)",
+		"expected": [
+			1,
+			0,
+			0
+		]
 	}
 ]
