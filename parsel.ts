@@ -25,7 +25,7 @@ export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
 	'nth-last-child',
 ]);
 
-const nthChildRegExp = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/;
+const nthChildRegExp = /(?<index>[\dn+-]+|even|odd)\s+of\s+(?<subtree>.+)/;
 export const RECURSIVE_PSEUDO_CLASSES_ARGS: Record<string, RegExp> = {
 	'nth-child': nthChildRegExp,
 	'nth-last-child': nthChildRegExp,

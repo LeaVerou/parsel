@@ -1109,5 +1109,38 @@
 			0,
 			0
 		]
+	},
+	{
+		"type": "specificity",
+		"input": ":nth-child(odd of li#x)",
+		"expected": [
+			1,
+			1,
+			1
+		]
+	},
+	{
+		"type": "parse",
+		"input": ":nth-child(even of p)",
+		"expected": {
+			"name": "nth-child",
+			"argument": "even of p",
+			"type": "pseudo-class",
+			"content": ":nth-child(even of p)",
+			"pos": [
+				0,
+				21
+			],
+			"index": "even",
+			"subtree": {
+				"name": "p",
+				"type": "type",
+				"content": "p",
+				"pos": [
+					0,
+					1
+				]
+			}
+		}
 	}
 ]
