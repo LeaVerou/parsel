@@ -31,17 +31,24 @@ export const RECURSIVE_PSEUDO_CLASSES_ARGS: Record<string, RegExp> = {
 	'nth-last-child': nthChildRegExp,
 };
 
+const argumentPatternCache = new Map<string, RegExp>();
 const getArgumentPatternByType = (type: string) => {
 	switch (type) {
 		case 'pseudo-element':
-		case 'pseudo-class':
-			return new RegExp(
-				TOKENS[type]!.source.replace(
-					'(?<argument>¶*)',
-					'(?<argument>.*)'
-				),
-				'gu'
-			);
+		case 'pseudo-class': {
+			let cached = argumentPatternCache.get(type);
+			if (!cached) {
+				cached = new RegExp(
+					TOKENS[type]!.source.replace(
+						'(?<argument>¶*)',
+						'(?<argument>.*)'
+					),
+					'gu'
+				);
+				argumentPatternCache.set(type, cached);
+			}
+			return cached;
+		}
 		default:
 			return TOKENS[type];
 	}
@@ -49,10 +56,9 @@ const getArgumentPatternByType = (type: string) => {
 
 export function gobbleParens(text: string, offset: number): string {
 	let nesting = 0;
-	let result = '';
+	const start = offset;
 	for (; offset < text.length; offset++) {
-		const char = text[offset];
-		switch (char) {
+		switch (text[offset]) {
 			case '(':
 				++nesting;
 				break;
@@ -60,12 +66,11 @@ export function gobbleParens(text: string, offset: number): string {
 				--nesting;
 				break;
 		}
-		result += char;
 		if (nesting === 0) {
-			return result;
+			return text.slice(start, offset + 1);
 		}
 	}
-	return result;
+	return text.slice(start, offset);
 }
 
 export function tokenizeBy(text: string, grammar = TOKENS): Token[] {
@@ -460,7 +465,7 @@ export function specificity(selector: string | AST): number[] {
 		let base = 10;
 		const specificities = ast.list.map((ast) => {
 			const sp = specificity(ast);
-			base = Math.max(base, ...specificity(ast));
+			base = Math.max(base, ...sp);
 			return sp;
 		});
 		const numbers = specificities.map((ast) =>
