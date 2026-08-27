@@ -1142,5 +1142,35 @@
 				]
 			}
 		}
+	},
+	{
+		"type": "tokenize",
+		"input": ".md\\:flex",
+		"expected": [
+			{
+				"name": "md\\:flex",
+				"type": "class",
+				"content": ".md\\:flex",
+				"pos": [
+					0,
+					9
+				]
+			}
+		]
+	},
+	{
+		"type": "tokenize",
+		"input": "#foo\\:bar",
+		"expected": [
+			{
+				"name": "foo\\:bar",
+				"type": "id",
+				"content": "#foo\\:bar",
+				"pos": [
+					0,
+					9
+				]
+			}
+		]
 	}
 ]

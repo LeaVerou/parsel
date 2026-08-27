@@ -1,14 +1,14 @@
 export const TOKENS: Record<string, RegExp> = {
 	attribute:
-		/\[\s*(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
-	id: /#(?<name>[-\w\P{ASCII}]+)/gu,
-	class: /\.(?<name>[-\w\P{ASCII}]+)/gu,
+		/\[\s*(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>(?:[-\w\P{ASCII}]|\\.)+)\s*(?:(?<operator>\W?=)\s*(?<value>.+?)\s*(\s(?<caseSensitive>[iIsS]))?\s*)?\]/gu,
+	id: /#(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu,
+	class: /\.(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
 	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu, // this must be before pseudo-class
 	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
-	type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>[-\w\P{ASCII}]+)/gu, // this must be last
+	type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu, // this must be last
 };
 
 export const TRIM_TOKENS = new Set<string>(['combinator', 'comma']);
