@@ -1,5 +1,5 @@
 import * as parsel from './dist/parsel.js';
-import testCases from './test.json' assert { type: "json" };
+import testCases from './test.json' with { type: "json" };
 import {writeFileSync} from 'node:fs';
 
 for (const testCase of testCases) {
