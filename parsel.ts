@@ -18,12 +18,19 @@ export const RECURSIVE_PSEUDO_CLASSES = new Set<string>([
 	'is',
 	'where',
 	'has',
+	'host',
+	'host-context',
 	'matches',
 	'-moz-any',
 	'-webkit-any',
 	'nth-child',
 	'nth-last-child',
 ]);
+
+/**
+ * Pseudo-elements whose argument contributes to specificity (e.g. ::slotted()).
+ */
+export const RECURSIVE_PSEUDO_ELEMENTS = new Set<string>(['slotted'])
 
 const nthChildRegExp = /(?<index>[\dn+-]+)\s+of\s+(?<subtree>.+)/;
 export const RECURSIVE_PSEUDO_CLASSES_ARGS: Record<string, RegExp> = {
@@ -369,10 +376,17 @@ export function parse(
 	}
 
 	for (const [token] of flatten(ast)) {
-		if (token.type !== 'pseudo-class' || !token.argument) {
+		if (token.type !== 'pseudo-class' && token.type !== 'pseudo-element') {
 			continue;
 		}
-		if (!RECURSIVE_PSEUDO_CLASSES.has(token.name)) {
+		if (!token.argument) {
+			continue;
+		}
+		const recursesIntoArgument =
+			token.type === 'pseudo-class'
+				? RECURSIVE_PSEUDO_CLASSES.has(token.name)
+				: RECURSIVE_PSEUDO_ELEMENTS.has(token.name);
+		if (!recursesIntoArgument) {
 			continue;
 		}
 		let argument = token.argument;
@@ -480,11 +494,28 @@ export function specificity(selector: string | AST): number[] {
 				ret[1]++;
 				break;
 			case 'pseudo-element':
+				ret[2]++;
+				// ::slotted() adds the specificity of its argument as well.
+				if (token.subtree) {
+					const sub = specificity(token.subtree);
+					sub.forEach((s, i) => (ret[i] += s));
+				}
+				break;
 			case 'type':
 				ret[2]++;
 				break;
 			case 'pseudo-class':
 				if (token.name === 'where') {
+					break;
+				}
+				// :host() and :host-context() contribute their own pseudo-class
+				// specificity on top of that of their argument.
+				if (token.name === 'host' || token.name === 'host-context') {
+					ret[1]++;
+					if (token.subtree) {
+						const sub = specificity(token.subtree);
+						sub.forEach((s, i) => (ret[i] += s));
+					}
 					break;
 				}
 				if (
@@ -538,6 +569,7 @@ export interface ClassToken extends NamedToken {
 export interface PseudoElementToken extends NamedToken {
 	type: 'pseudo-element';
 	argument?: string;
+	subtree?: AST;
 }
 
 export interface PseudoClassToken extends NamedToken {
