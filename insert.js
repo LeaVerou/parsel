@@ -13,5 +13,5 @@ export default function insert(obj, {before, property, value}) {
 		}
 	}
 
-	Object.assign(obj, {property: value, ...temp});
+	Object.assign(obj, {[property]: value, ...temp});
 }
