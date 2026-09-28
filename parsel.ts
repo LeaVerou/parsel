@@ -292,33 +292,48 @@ function nestTokens(tokens: Token[], { list = true } = {}): AST {
 }
 
 /**
- * Traverse an AST in depth-first order
+ * Traverse an AST in depth-first order.
+ *
+ * Yields `[token, parent, inSubtree]` triples: `inSubtree` is true when the token
+ * was reached through the argument of a pseudo-class like `:is()` or a
+ * pseudo-element like `::slotted()`.
  */
 export function* flatten(
 	node: AST,
 	/**
 	 * @internal
 	 */
-	parent?: AST
-): IterableIterator<[Token, AST | undefined]> {
+	parent?: AST,
+	inSubtree = false
+): IterableIterator<[Token, AST | undefined, boolean]> {
 	switch (node.type) {
 		case 'list':
 			for (let child of node.list) {
-				yield* flatten(child, node);
+				yield* flatten(child, node, inSubtree);
 			}
 			break;
 		case 'complex':
-			yield* flatten(node.left, node);
-			yield* flatten(node.right, node);
+			yield* flatten(node.left, node, inSubtree);
+			yield* flatten(node.right, node, inSubtree);
 			break;
 		case 'relative':
-			yield* flatten(node.right, node);
+			yield* flatten(node.right, node, inSubtree);
 			break;
 		case 'compound':
-			yield* node.list.map((token): [Token, Compound] => [token, node]);
+			yield* node.list.map((token): [Token, Compound, boolean] => [token, node, inSubtree]);
 			break;
 		default:
-			yield [node, parent];
+			yield [node, parent, inSubtree];
+			if (node.type === 'pseudo-class' || node.type === 'pseudo-element') {
+				// Recurse into the argument's AST so that traversal APIs and callers
+				// like parse() and specificity() see the whole selector. (`subtree`
+				// is only declared on PseudoClassToken, but a pseudo-element carries
+				// one too once its argument has been parsed.)
+				const subtree: AST | undefined = (node as { subtree?: AST }).subtree;
+				if (subtree) {
+					yield* flatten(subtree, node, true);
+				}
+			}
 	}
 }
 
@@ -373,6 +388,11 @@ export function parse(
 			continue;
 		}
 		if (!RECURSIVE_PSEUDO_CLASSES.has(token.name)) {
+			continue;
+		}
+		// Subtrees of pseudos found inside another pseudo's argument are built
+		// when flatten() reaches them, so nested arguments get parsed too.
+		if (token.subtree) {
 			continue;
 		}
 		let argument = token.argument;
@@ -470,7 +490,12 @@ export function specificity(selector: string | AST): number[] {
 	}
 
 	const ret = [0, 0, 0];
-	for (const [token] of flatten(ast)) {
+	// Tokens reached through a recursive pseudo's argument are accounted for by
+	// the pseudo itself; visiting them here as well would double-count them.
+	for (const [token, , inSubtree] of flatten(ast)) {
+		if (inSubtree) {
+			continue;
+		}
 		switch (token.type) {
 			case 'id':
 				ret[0]++;
