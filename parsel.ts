@@ -4,7 +4,8 @@ export const TOKENS: Record<string, RegExp> = {
 	id: /#(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu,
 	class: /\.(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
-	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
+	combinator: /\s*(?:\|\||[\s>+~])\s*/g, // this must be after attribute
+	nesting: /&/g,
 	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu, // this must be before pseudo-class
 	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
@@ -565,6 +566,10 @@ export interface TypeToken extends NamespacedToken, NamedToken {
 	type: 'type';
 }
 
+export interface NestingToken extends BaseToken {
+	type: 'nesting';
+}
+
 export interface UnknownToken extends BaseToken {
 	type: never;
 }
@@ -579,6 +584,7 @@ export type Token =
 	| PseudoClassToken
 	| UniversalToken
 	| TypeToken
+	| NestingToken
 	| UnknownToken;
 
 export interface Complex {
