@@ -5,8 +5,8 @@ export const TOKENS: Record<string, RegExp> = {
 	class: /\.(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu,
 	comma: /\s*,\s*/g, // must be before combinator
 	combinator: /\s*[\s>+~]\s*/g, // this must be after attribute
-	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu, // this must be before pseudo-class
-	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>¶*)\))?/gu,
+	'pseudo-element': /::(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>\u00b6*)\))?/gu, // this must be before pseudo-class
+	'pseudo-class': /:(?<name>[-\w\P{ASCII}]+)(?:\((?<argument>\u00b6*)\))?/gu,
 	universal: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?\*/gu,
 	type: /(?:(?<namespace>\*|[-\w\P{ASCII}]*)\|)?(?<name>(?:[-\w\P{ASCII}]|\\.)+)/gu, // this must be last
 };
@@ -37,7 +37,7 @@ const getArgumentPatternByType = (type: string) => {
 		case 'pseudo-class':
 			return new RegExp(
 				TOKENS[type]!.source.replace(
-					'(?<argument>¶*)',
+					'(?<argument>\\u00b6*)',
 					'(?<argument>.*)'
 				),
 				'gu'
@@ -168,7 +168,7 @@ export function tokenize(selector: string, grammar = TOKENS): Token[] {
 		while ((offset = selector.indexOf('(', pos)) > -1) {
 			const value = gobbleParens(selector, offset);
 			replacements.push({ value, offset });
-			selector = `${selector.substring(0, offset)}(${'¶'.repeat(
+			selector = `${selector.substring(0, offset)}(${'\u00b6'.repeat(
 				value.length - 2
 			)})${selector.substring(offset + value.length)}`;
 			pos = offset + value.length;

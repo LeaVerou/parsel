@@ -1139,5 +1139,53 @@
 				]
 			}
 		]
+	},
+	{
+		"type": "tokenize",
+		"input": ":has(div > span)",
+		"expected": [
+			{
+				"name": "has",
+				"argument": "div > span",
+				"type": "pseudo-class",
+				"content": ":has(div > span)",
+				"pos": [
+					0,
+					16
+				]
+			}
+		]
+	},
+	{
+		"type": "tokenize",
+		"input": ":nth-child(2n+1)",
+		"expected": [
+			{
+				"name": "nth-child",
+				"argument": "2n+1",
+				"type": "pseudo-class",
+				"content": ":nth-child(2n+1)",
+				"pos": [
+					0,
+					16
+				]
+			}
+		]
+	},
+	{
+		"type": "tokenize",
+		"input": "::part(foo)",
+		"expected": [
+			{
+				"name": "part",
+				"argument": "foo",
+				"type": "pseudo-element",
+				"content": "::part(foo)",
+				"pos": [
+					0,
+					11
+				]
+			}
+		]
 	}
 ]
